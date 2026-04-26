@@ -10,7 +10,7 @@ Simao Korea – 201403499
 Josef Victoria – 225049937
 Kezilahabi Wilson – 225051729
 Kandjengo Gideon – 224157736
-Johannes N Martin – 22250448403
+Johannes N Martin – 225047403
 Jason Ekandjo – 225151049
 Mushe Maramo – 224132822
 Amukwiita Johannes PF – 225051826
