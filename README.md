@@ -27,7 +27,7 @@
 
 ## 🏗️ Engineering Domain
 
-**Metallurgical Engineering** — Software Engineering  
+**Metallurgical Engineering**   
 *(Mobile Application Development with a focus on Mining and Geological Information Systems)*
 
 ---
