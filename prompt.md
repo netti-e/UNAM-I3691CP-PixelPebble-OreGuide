@@ -218,3 +218,5 @@ Dependency Declarations: If a code implementation requires an external library i
 Atomic Component Engineering: Keep architectural designs single-purpose and abstract modular configurations out into cleanly encapsulated hooks and components.
 
 Session Completion Requirement: At the conclusion of your response, output a "Files Touched Summary Table" along with a copyable, updated version of the CURRENT DEVELOPMENT STATE & TASK LEDGER blocks so the user can easily update this document for coordination.
+
+BEFORE YOU MAKE ANY CHANGES TO FILES ALWAYS REQUEST FOR THE USER TO UPLOAD THE EXISTING FILES SO NO ASSUMPTIONS ARE MADE!

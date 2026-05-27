@@ -1,98 +1,83 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+// app/(tabs)/index.tsx
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { router } from 'expo-router';
+import { LogOut, Search, User } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { SafeAreaView, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { THEME } from '../../constants/theme';
+import { styles } from './index.styles';
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const [menuOpen, setMenuOpen] = useState(false);
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const handleLogout = () => {
+    setMenuOpen(false);
+    router.replace('/(auth)/login');
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* Top Navigation Row */}
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>OreGuide</Text>
+        <TouchableOpacity 
+          style={styles.profileButton} 
+          onPress={() => setMenuOpen(!menuOpen)}
+          activeOpacity={0.8}
+        >
+          <User size={22} color={THEME.colors.text} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Dismiss Menu Backdrop Layer */}
+      {menuOpen && (
+        <TouchableWithoutFeedback onPress={() => setMenuOpen(false)}>
+          <View style={styles.backdrop} />
+        </TouchableWithoutFeedback>
+      )}
+
+      {/* Absolute Context Dropdown Menu */}
+      {menuOpen && (
+        <View style={styles.dropdown}>
+          <TouchableOpacity style={styles.dropdownItem} onPress={handleLogout} activeOpacity={0.7}>
+            <LogOut size={18} color="#EF4444" />
+            <Text style={[styles.dropdownItemText, styles.logoutText]}>Log Out</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Mock Search Functional Bar */}
+        <View style={styles.searchSection}>
+          <View style={styles.searchBarPlaceholder}>
+            <Search size={20} color={THEME.colors.textMuted} />
+            <Text style={styles.searchPlaceholderText}>Search minerals by name...</Text>
+          </View>
+        </View>
+
+        {/* Structural Filter Categories */}
+        <View style={styles.filterSection}>
+          <Text style={styles.sectionTitle}>Filter by Chromatic Profile</Text>
+          <View style={styles.chipContainer}>
+            {['Metallic Grey', 'Azure Blue', 'Brass Yellow', 'Deep Red'].map((color) => (
+              <View key={color} style={styles.chip}>
+                <Text style={styles.chipText}>{color}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={[styles.filterSection, { marginTop: THEME.spacing.lg }]}>
+          <Text style={styles.sectionTitle}>Filter by Elemental Matrix</Text>
+          <View style={styles.chipContainer}>
+            {['Copper (Cu)', 'Iron (Fe)', 'Gold (Au)', 'Sulfur (S)'].map((element) => (
+              <View key={element} style={styles.chip}>
+                <Text style={styles.chipText}>{element}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
