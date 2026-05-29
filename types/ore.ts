@@ -63,3 +63,33 @@ export interface InferenceResponse {
   inference_time_ms: number;
   detections: InferenceDetection[];
 }
+
+// [STATUS: EDIT] — Consolidating types and removing duplicate interface declarations
+// types/ore.ts
+
+export interface BoundingBox {
+  x_min: number;
+  y_min: number;
+  x_max: number;
+  y_max: number;
+}
+
+export interface MineralInfo {
+  colour: string;
+  hardness: string;
+  common_uses: string;
+}
+
+export interface InferenceDetection {
+  label: string;
+  confidence: number;
+  bounding_box: BoundingBox;
+  mineral_info: MineralInfo;
+}
+
+export interface InferenceResponse {
+  status: 'success' | 'error';
+  model_version: string;
+  inference_time_ms: number;
+  detections: InferenceDetection[];
+}
