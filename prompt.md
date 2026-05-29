@@ -26,26 +26,28 @@ To ensure flawless coordination across multiple AI sessions and team handoffs, y
 *Last Updated: Following successful Render deployment and base64 API pipeline integration.*
 
 ### 1. Functional Requirements Status
-| Feature ID | Feature Description | Status | Completed In | Notes / Blocks |
-| :--- | :--- | :--- | :--- | :--- |
-| **FR-001** | User registration | PENDING | - | - |
-| **FR-002** | Login / logout | PENDING | - | - |
-| **FR-003** | Search by name | PENDING | - | - |
-| **FR-004** | Search by color | PENDING | - | - |
-| **FR-005** | Search by chemical element | PENDING | - | - |
-| **FR-006** | Display ore profile | PENDING | - | - |
-| **FR-007** | Display ore photos | PENDING | - | - |
-| **FR-008** | Display map with mine pins | PENDING | - | - |
-| **FR-009** | Tap pin → view ore | PENDING | - | - |
-| **FR-010** | Add to favorites | PENDING | - | - |
-| **FR-011** | View favorites | PENDING | - | - |
-| **FR-012** | Remove from favorites | PENDING | - | - |
-| **FR-013** | Offline cache | PENDING | - | - |
-| **FR-014** | Offline mode indicator | PENDING | - | - |
-| **FR-015** | Educational content section | PENDING | - | - |
-| **FR-016** | Persistent login | PENDING | - | - |
-| **FR-AI-001**| Capture / upload image pipeline | **COMPLETED** | Session 2 | Successfully integrated via base64 buffer encoding to live Render cloud router. |
-| **FR-AI-002**| YOLOv8 inference result rendering| **COMPLETED** | Session 2 | Native component updates parsing response models alongside structural mineral fallbacks. |
+| Feature ID | Feature Description | Status | Completed In | Notes / Blocks | Done By |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **FR-001** | User registration | PENDING | - | - | - |
+| **FR-002** | Login / logout | PENDING | - | - | - |
+| **FR-003** | Search by name | PENDING | - | - | - |
+| **FR-004** | Search by color | PENDING | - | - | - |
+| **FR-005** | Search by chemical element | PENDING | - | - | - |
+| **FR-006** | Display ore profile | PENDING | - | - | - |
+| **FR-007** | Display ore photos | PENDING | - | - | - |
+| **FR-008** | Display map with mine pins | PENDING | - | - | - |
+| **FR-009** | Tap pin → view ore | PENDING | - | - | - |
+| **FR-010** | Add to favorites | PENDING | - | - | - |
+| **FR-011** | View favorites | PENDING | - | - | - |
+| **FR-012** | Remove from favorites | PENDING | - | - | - |
+| **FR-013** | Offline cache | PENDING | - | - | - |
+| **FR-014** | Offline mode indicator | PENDING | - | - | - |
+| **FR-015** | Educational content section | PENDING | - | - | - |
+| **FR-016** | Persistent login | PENDING | - | - | - |
+| **FR-AI-001**| Capture / upload image pipeline | **COMPLETED** | Session 2 | Successfully integrated via base64 buffer encoding to live Render cloud router. | [Wilson](https://github.com/SWIF1Bl4D3) & [Victoria](https://github.com/VictoriaNaufiku450-pixel) |
+| **FR-AI-002**| YOLOv8 inference result rendering| **IN PROGRESS** | Session 2 | Native component updates parsing response models alongside structural mineral fallbacks. | [Wilson](https://github.com/SWIF1Bl4D3) & [Victoria](https://github.com/VictoriaNaufiku450-pixel) |
+
+#
 
 ### 2. File State Map
 | File Path | Architecture Status | Git / Working Status | Associated FR IDs |
