@@ -1,5 +1,5 @@
 // app/(tabs)/explore.tsx
-// [STATUS: OPERATIONAL] — Integrated base64 transmission structures and real-time absolute coordinate overlays
+// [STATUS: OPERATIONAL] — Hardened base64 pipeline with stable container tracking
 
 import * as ImagePicker from 'expo-image-picker';
 import { Camera, ChevronRight, Image as ImageIcon, RotateCcw, Zap } from 'lucide-react-native';
@@ -28,7 +28,7 @@ export default function ExploreScreen() {
   const [results, setResults] = useState<InferenceResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
 
-  // Resolution dimensions tracking states
+  // Dimension tracking engines
   const [imageOriginalSize, setImageOriginalSize] = useState({ width: 1, height: 1 });
   const [imageLayoutSize, setImageLayoutSize] = useState({ width: 0, height: 0 });
 
@@ -114,10 +114,10 @@ export default function ExploreScreen() {
     setResults(null);
     setErrorMessage('');
     setImageLayoutSize({ width: 0, height: 0 });
+    setImageOriginalSize({ width: 1, height: 1 });
     setScreenState('idle');
   }, []);
 
-  // Utility file reader to compile cross-platform binary string blocks safely
   const convertUriToBase64 = async (uri: string): Promise<string> => {
     const response = await fetch(uri);
     const blob = await response.blob();
@@ -139,10 +139,8 @@ export default function ExploreScreen() {
     setErrorMessage('');
 
     try {
-      // 1. Structural base64 serialization
       const base64Data = await convertUriToBase64(imageUri);
 
-      // 2. Transmit structured base64 parameter frames directly via application/json
       const response = await fetch('https://oreguide-backend.onrender.com/api/v1/identify', {
         method: 'POST',
         headers: { 
@@ -168,10 +166,12 @@ export default function ExploreScreen() {
     }
   }, [imageUri]);
 
-  // Intercept layout bounds directly from the physical viewport layer
-  const handleImageLayout = (event: LayoutChangeEvent) => {
+  // Captures layout bounds of the stable parent view container
+  const handleContainerLayout = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
-    setImageLayoutSize({ width, height });
+    if (width > 0 && height > 0) {
+      setImageLayoutSize({ width, height });
+    }
   };
 
   const canIdentify = screenState === 'preview' || screenState === 'error';
@@ -192,13 +192,15 @@ export default function ExploreScreen() {
         {/* Image Zone */}
         <View style={styles.imageZone}>
           {imageUri ? (
-            /* Removed overflow: 'hidden' to prevent bounding labels from cutting off at container limits */
-            <View style={[styles.imagePreviewWrapper, { position: 'relative', backgroundColor: '#000' }]}>
+            /* CRITICAL FIX: onLayout attached here guarantees continuous stability when the results view mounts */
+            <View 
+              style={[styles.imagePreviewWrapper, { position: 'relative', backgroundColor: '#000' }]}
+              onLayout={handleContainerLayout}
+            >
               <Image 
                 source={{ uri: imageUri }} 
                 style={styles.previewImage} 
                 resizeMode="contain" 
-                onLayout={handleImageLayout}
               />
               
               {/* Absolute Canvas Overlay Engine Layer */}
@@ -206,8 +208,10 @@ export default function ExploreScreen() {
                 if (!detection.bounding_box) return null;
                 const { x_min, y_min, x_max, y_max } = detection.bounding_box;
 
-                // 1. Calculate true image boundaries after scale containment modifications
-                const imageAspect = imageOriginalSize.width / imageOriginalSize.height;
+                const origWidth = imageOriginalSize.width || 1;
+                const origHeight = imageOriginalSize.height || 1;
+
+                const imageAspect = origWidth / origHeight;
                 const layoutAspect = imageLayoutSize.width / imageLayoutSize.height;
 
                 let renderWidth = imageLayoutSize.width;
@@ -216,25 +220,23 @@ export default function ExploreScreen() {
                 let offsetY = 0;
 
                 if (imageAspect > layoutAspect) {
-                  // Image is wider than container view -> Letterboxed layout (empty top/bottom padding)
+                  // Image is wider than container view -> Letterboxed
                   renderHeight = imageLayoutSize.width / imageAspect;
                   offsetY = (imageLayoutSize.height - renderHeight) / 2;
                 } else {
-                  // Image is taller than container view -> Pillarboxed layout (empty left/right padding)
+                  // Image is taller than container view -> Pillarboxed
                   renderWidth = imageLayoutSize.height * imageAspect;
                   offsetX = (imageLayoutSize.width - renderWidth) / 2;
                 }
 
-                // 2. Map coordinates safely against the calculated viewport workspace pixels
-                const scaleX = renderWidth / imageOriginalSize.width;
-                const scaleY = renderHeight / imageOriginalSize.height;
+                const scaleX = renderWidth / origWidth;
+                const scaleY = renderHeight / origHeight;
 
                 const boxLeft = offsetX + (x_min * scaleX);
                 const boxTop = offsetY + (y_min * scaleY);
                 const boxWidth = (x_max - x_min) * scaleX;
                 const boxHeight = (y_max - y_min) * scaleY;
 
-                // 3. Edge Guardrails: Flip text alignment internally if the box hits the display window ceiling
                 const isNearTopEdge = boxTop < 25;
 
                 return (
@@ -256,7 +258,7 @@ export default function ExploreScreen() {
                     <View
                       style={{
                         position: 'absolute',
-                        top: isNearTopEdge ? 0 : -22, // Drop inline inside the box if hitting top edge
+                        top: isNearTopEdge ? 0 : -22,
                         left: -2,
                         backgroundColor: THEME.colors.primary,
                         paddingHorizontal: 6,
