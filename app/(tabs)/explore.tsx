@@ -192,7 +192,8 @@ export default function ExploreScreen() {
         {/* Image Zone */}
         <View style={styles.imageZone}>
           {imageUri ? (
-            <View style={[styles.imagePreviewWrapper, { position: 'relative', overflow: 'hidden' }]}>
+            /* Removed overflow: 'hidden' to prevent bounding labels from cutting off at container limits */
+            <View style={[styles.imagePreviewWrapper, { position: 'relative', backgroundColor: '#000' }]}>
               <Image 
                 source={{ uri: imageUri }} 
                 style={styles.previewImage} 
@@ -205,14 +206,36 @@ export default function ExploreScreen() {
                 if (!detection.bounding_box) return null;
                 const { x_min, y_min, x_max, y_max } = detection.bounding_box;
 
-                // Scale modifiers tracking original size limits down to on-screen render units
-                const scaleX = imageLayoutSize.width / imageOriginalSize.width;
-                const scaleY = imageLayoutSize.height / imageOriginalSize.height;
+                // 1. Calculate true image boundaries after scale containment modifications
+                const imageAspect = imageOriginalSize.width / imageOriginalSize.height;
+                const layoutAspect = imageLayoutSize.width / imageLayoutSize.height;
 
-                const boxLeft = x_min * scaleX;
-                const boxTop = y_min * scaleY;
+                let renderWidth = imageLayoutSize.width;
+                let renderHeight = imageLayoutSize.height;
+                let offsetX = 0;
+                let offsetY = 0;
+
+                if (imageAspect > layoutAspect) {
+                  // Image is wider than container view -> Letterboxed layout (empty top/bottom padding)
+                  renderHeight = imageLayoutSize.width / imageAspect;
+                  offsetY = (imageLayoutSize.height - renderHeight) / 2;
+                } else {
+                  // Image is taller than container view -> Pillarboxed layout (empty left/right padding)
+                  renderWidth = imageLayoutSize.height * imageAspect;
+                  offsetX = (imageLayoutSize.width - renderWidth) / 2;
+                }
+
+                // 2. Map coordinates safely against the calculated viewport workspace pixels
+                const scaleX = renderWidth / imageOriginalSize.width;
+                const scaleY = renderHeight / imageOriginalSize.height;
+
+                const boxLeft = offsetX + (x_min * scaleX);
+                const boxTop = offsetY + (y_min * scaleY);
                 const boxWidth = (x_max - x_min) * scaleX;
                 const boxHeight = (y_max - y_min) * scaleY;
+
+                // 3. Edge Guardrails: Flip text alignment internally if the box hits the display window ceiling
+                const isNearTopEdge = boxTop < 25;
 
                 return (
                   <View
@@ -226,19 +249,21 @@ export default function ExploreScreen() {
                       borderWidth: 2,
                       borderColor: THEME.colors.primary,
                       backgroundColor: 'rgba(234, 179, 8, 0.1)',
+                      zIndex: 10,
                     }}
                   >
                     {/* Floating Label Badge Box */}
                     <View
                       style={{
                         position: 'absolute',
-                        top: -22,
+                        top: isNearTopEdge ? 0 : -22, // Drop inline inside the box if hitting top edge
                         left: -2,
                         backgroundColor: THEME.colors.primary,
                         paddingHorizontal: 6,
                         paddingVertical: 2,
-                        borderTopLeftRadius: 4,
+                        borderTopLeftRadius: isNearTopEdge ? 0 : 4,
                         borderTopRightRadius: 4,
+                        borderBottomLeftRadius: isNearTopEdge ? 4 : 0,
                       }}
                     >
                       <Text style={{ color: '#000', fontSize: 10, fontWeight: 'bold' }}>

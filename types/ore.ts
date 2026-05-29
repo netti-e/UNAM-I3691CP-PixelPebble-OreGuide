@@ -1,9 +1,10 @@
 // types/ore.ts
+// [STATUS: OPERATIONAL] — Unified application schemas and AI model contracts
 
 export interface UserProfile {
   userID: string;
   email: string;
-  dateCreated: Date | string; // Supporting both raw Date objects and Firestore ISO string configurations
+  dateCreated: Date | string; // Supports both raw Date objects and Firestore ISO string configurations
 }
 
 export interface Ore {
@@ -36,36 +37,9 @@ export interface MineLocation {
   accessPatterns: string; // e.g., "Active Mine", "Abandoned Site", "Public Access"
 }
 
+// ============================================================================
 // AI Inference API Contract Specifications
-export interface BoundingBox {
-  x_min: number;
-  y_min: number;
-  x_max: number;
-  y_max: number;
-}
-
-export interface MineralInfo {
-  colour: string;
-  hardness: string;
-  common_uses: string;
-}
-
-export interface InferenceDetection {
-  label: string;
-  confidence: number;
-  bounding_box: BoundingBox;
-  mineral_info: MineralInfo;
-}
-
-export interface InferenceResponse {
-  status: 'success' | 'error';
-  model_version: string;
-  inference_time_ms: number;
-  detections: InferenceDetection[];
-}
-
-// [STATUS: EDIT] — Consolidating types and removing duplicate interface declarations
-// types/ore.ts
+// ============================================================================
 
 export interface BoundingBox {
   x_min: number;
@@ -83,7 +57,7 @@ export interface MineralInfo {
 export interface InferenceDetection {
   label: string;
   confidence: number;
-  bounding_box: BoundingBox;
+  bounding_box?: BoundingBox; // Optional flag resolves layout check conflicts in explore.tsx
   mineral_info: MineralInfo;
 }
 
