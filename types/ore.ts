@@ -1,4 +1,7 @@
+// [STATUS: EDIT] — Consolidated user's domain data models with mandatory application-level authentication types.
+
 // types/ore.ts
+import { User } from 'firebase/auth';
 
 export interface UserProfile {
   userID: string;
@@ -63,3 +66,19 @@ export interface InferenceResponse {
   inference_time_ms: number;
   detections: InferenceDetection[];
 }
+
+// Global Application Authentication Context Types
+export interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  register: (credentials: RegisterCredentials) => Promise<void>;
+  logout: () => Promise<void>;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: React.ComponentState; // Safe fallback validation for pure string input elements
+}
+
+export type RegisterCredentials = LoginCredentials;
