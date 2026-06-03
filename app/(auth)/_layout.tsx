@@ -1,16 +1,19 @@
-import { Stack } from 'expo-router';
-import React from 'react';
+// [STATUS: NEW | Guard auth screens and redirect signed-in users]
+// app/(auth)/_layout.tsx
+import { Redirect, Stack } from 'expo-router';
+
+import { useAuth } from '@/hooks/use-auth';
 
 export default function AuthLayout() {
-  return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        animation: 'fade', // Smooth visual transition between login & registration
-      }}
-    >
-      <Stack.Screen name="login" />
-      <Stack.Screen name="register" />
-    </Stack>
-  );
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return null;
+  }
+
+  if (user) {
+    return <Redirect href="/(tabs)" />;
+  }
+
+  return <Stack screenOptions={{ headerShown: false }} />;
 }
