@@ -1,6 +1,6 @@
-// [STATUS: EDIT] — Consolidated user's domain data models with mandatory application-level authentication types.
-
 // types/ore.ts
+
+
 import { User } from 'firebase/auth';
 
 export interface UserProfile {

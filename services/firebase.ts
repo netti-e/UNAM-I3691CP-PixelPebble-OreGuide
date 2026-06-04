@@ -1,6 +1,6 @@
-// [STATUS: EDIT] — Refactored Firebase initialization to use safe environment variables and added Firestore/Storage integrations.
-
 // services/firebase.ts
+
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import { getReactNativePersistence, initializeAuth } from 'firebase/auth';
