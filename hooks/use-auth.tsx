@@ -1,6 +1,5 @@
-// [STATUS: NEW] — Implemented Auth Context Provider and useAuth hook tracking login, registration, and session persistence.
-
-// hooks/use-auth.ts
+// [STATUS: EDIT] — Migrated from primitive React.createElement to clean, idiomatic TSX markup and updated path aliases.
+// hooks/use-auth.tsx
 import {
   User,
   createUserWithEmailAndPassword,
@@ -10,8 +9,8 @@ import {
 } from 'firebase/auth';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { auth, db } from '../services/firebase';
-import { AuthContextType, LoginCredentials, RegisterCredentials } from '../types/ore';
+import { auth, db } from '@/services/firebase';
+import { AuthContextType, LoginCredentials, RegisterCredentials } from '@/types/ore';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -70,10 +69,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  return React.createElement(
-    AuthContext.Provider,
-    { value: { user, loading, login, register, logout } },
-    children
+  return (
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+      {children}
+    </AuthContext.Provider>
   );
 }
 
