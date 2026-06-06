@@ -31,7 +31,7 @@ export const FEATURED_ORES: Ore[] = [
     chemicalComposition: 'Fe2O3',
     uses: 'Major iron ore, pigments, polishing compounds',
     imageSamples: [
-      'https://firebasestorage.googleapis.com/v0/b/oreguide-95c75.firebasestorage.app/o/ore-photos%2Fhematite%2Fhematite-main.jpeg?alt=media&token=7eae5b56-8bfc-4e54-865a-8f2924175247',
+      'https://firebasestorage.googleapis.com/v0/b/oreguide-95c75.firebasestorage.app/o/ore-photos%2Fhematite%2Fhematite-main.jpeg?alt=media&token=7eae5b56-8bfc-4e54-865a-8f29241752c8',
     ],
   },
 ];
