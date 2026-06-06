@@ -27,28 +27,24 @@ function RootLayoutContent() {
   const [showOverlay, setShowOverlay] = useState(true);
 
   // Animation Values
-  const oreTranslateX = useSharedValue(SCREEN_WIDTH);     // ORE from right
-  const guideTranslateX = useSharedValue(-SCREEN_WIDTH);  // GUIDE from left
+  const oreTranslateX = useSharedValue(SCREEN_WIDTH);
+  const guideTranslateX = useSharedValue(-SCREEN_WIDTH);
   const iconTranslateY = useSharedValue(-SCREEN_HEIGHT);
   const iconTranslateX = useSharedValue(90);
   const iconRotation = useSharedValue(0);
   const loadingBarWidth = useSharedValue(0);
   const iconShake = useSharedValue(0);
-  const whiteFlashScale = useSharedValue(0);
+  const iconScale = useSharedValue(1);
 
   useEffect(() => {
     if (!authLoading) {
       SplashScreen.hideAsync();
 
-      // 1. Text sliding in opposite directions
       oreTranslateX.value = withTiming(0, { duration: 1500, easing: Easing.out(Easing.cubic) });
       guideTranslateX.value = withTiming(0, { duration: 1500, easing: Easing.out(Easing.cubic) });
 
-      // 2. 1.5s delay before icon drop
       setTimeout(() => {
         iconTranslateY.value = withTiming(-85, { duration: 600, easing: Easing.out(Easing.quad) });
-
-        // 3. Roll/Bounce to "O"
         setTimeout(() => {
           iconTranslateX.value = withTiming(-110, { duration: 1500, easing: Easing.linear });
           iconRotation.value = withTiming(-360, { duration: 1500, easing: Easing.linear });
@@ -61,16 +57,14 @@ function RootLayoutContent() {
             2, false
           );
 
-          // 4. Final fall off to rest on the loading bar
           setTimeout(() => {
             iconTranslateY.value = withTiming(5, { duration: 400, easing: Easing.out(Easing.quad) });
             iconTranslateX.value = withTiming(-150, { duration: 400, easing: Easing.out(Easing.quad) });
 
-            // 5. Loading Bar
             setTimeout(() => {
               loadingBarWidth.value = withTiming(240, { duration: 5000, easing: Easing.linear }, (finished) => {
                 if (finished) {
-                  // 6. Shake & Flash
+                  // SHAKE THEN ZOOM
                   iconShake.value = withRepeat(
                     withSequence(
                       withTiming(10, { duration: 100 }),
@@ -78,11 +72,8 @@ function RootLayoutContent() {
                       withTiming(0, { duration: 100 })
                     ),
                     3, false, () => {
-                      whiteFlashScale.value = withTiming(50, {
-                        duration: 1000,
-                        easing: Easing.bezier(0.5, 0, 0.7, 0.2)
-                      }, (isFinished) => {
-                        if (isFinished) runOnJS(setShowOverlay)(false);
+                      iconScale.value = withTiming(20, { duration: 800, easing: Easing.in(Easing.exp) }, () => {
+                        runOnJS(setShowOverlay)(false);
                       });
                     }
                   );
@@ -102,14 +93,11 @@ function RootLayoutContent() {
     transform: [
       { translateX: iconTranslateX.value },
       { translateY: iconTranslateY.value },
-      { rotate: `${iconRotation.value + iconShake.value}deg` }
+      { rotate: `${iconRotation.value + iconShake.value}deg` },
+      { scale: iconScale.value }
     ],
   }));
   const loadingStyle = useAnimatedStyle(() => ({ width: loadingBarWidth.value }));
-  const flashStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: whiteFlashScale.value }],
-    opacity: Math.max(0, 1 - whiteFlashScale.value / 50),
-  }));
 
   return (
     <View style={styles.container}>
@@ -122,13 +110,9 @@ function RootLayoutContent() {
         <StatusBar style="auto" />
       </ThemeProvider>
 
-      <Animated.View style={[styles.whiteFlash, flashStyle]} />
-
       {showOverlay && (
-        <View style={StyleSheet.absoluteFill}>
-          <View style={styles.overlayCanvas} />
+        <View style={styles.overlayCanvas}>
           <View style={styles.animationCenteringContainer}>
-            
             <View style={styles.textRow}>
               <Animated.View style={oreStyle}><Text style={styles.brandTextWhite}>ORE </Text></Animated.View>
               <Animated.View style={guideStyle}><Text style={styles.brandTextBlack}>GUIDE</Text></Animated.View>
@@ -158,15 +142,8 @@ export default function RootLayout() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  overlayCanvas: { ...StyleSheet.absoluteFillObject, backgroundColor: '#E97A34' },
-  whiteFlash: {
-    position: 'absolute',
-    top: SCREEN_HEIGHT / 2 - 60,
-    left: SCREEN_WIDTH / 7 - 60,
-    width: 150, height: 150, borderRadius: 100,
-    backgroundColor: '#FFFFFF', zIndex: 100,
-  },
-  animationCenteringContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', zIndex: 20 },
+  overlayCanvas: { ...StyleSheet.absoluteFillObject, backgroundColor: '#E97A34', zIndex: 100 },
+  animationCenteringContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   textRow: { flexDirection: 'row', justifyContent: 'center', width: 240 },
   loadingContainer: { width: 240, alignItems: 'flex-start' },
   brandTextWhite: { fontSize: 32, fontWeight: '900', color: '#FFFFFF', letterSpacing: 4 },
@@ -178,7 +155,6 @@ const styles = StyleSheet.create({
     borderWidth: 3, borderColor: '#FFFFFF',
     justifyContent: 'center', alignItems: 'center',
     overflow: 'hidden', backgroundColor: '#E97A34',
-    zIndex: 21,
   },
   brandIcon: { width: 100, height: 100 },
 });
