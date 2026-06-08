@@ -1,4 +1,5 @@
 // types/ore.ts
+// [STATUS: OPERATIONAL] — Unified application schemas and AI model contracts
 
 
 import { User } from 'firebase/auth';
@@ -6,7 +7,7 @@ import { User } from 'firebase/auth';
 export interface UserProfile {
   userID: string;
   email: string;
-  dateCreated: Date | string; // Supporting both raw Date objects and Firestore ISO string configurations
+  dateCreated: Date | string; // Supports both raw Date objects and Firestore ISO string configurations
 }
 
 export interface Ore {
@@ -39,7 +40,10 @@ export interface MineLocation {
   accessPatterns: string; // e.g., "Active Mine", "Abandoned Site", "Public Access"
 }
 
+// ============================================================================
 // AI Inference API Contract Specifications
+// ============================================================================
+
 export interface BoundingBox {
   x_min: number;
   y_min: number;
@@ -56,7 +60,7 @@ export interface MineralInfo {
 export interface InferenceDetection {
   label: string;
   confidence: number;
-  bounding_box: BoundingBox;
+  bounding_box?: BoundingBox; // Optional flag resolves layout check conflicts in explore.tsx
   mineral_info: MineralInfo;
 }
 

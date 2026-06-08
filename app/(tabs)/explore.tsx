@@ -1,5 +1,5 @@
 // app/(tabs)/explore.tsx
-// [STATUS: OPERATIONAL] — Integrated live Render cloud endpoint and optimized multipart parsing
+// [STATUS: OPERATIONAL] — Hardened base64 pipeline with stable container tracking
 
 import * as ImagePicker from 'expo-image-picker';
 import { Camera, ChevronRight, Image as ImageIcon, RotateCcw, Zap } from 'lucide-react-native';
@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  LayoutChangeEvent,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -26,6 +27,10 @@ export default function ExploreScreen() {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [results, setResults] = useState<InferenceResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
+
+  // Dimension tracking engines
+  const [imageOriginalSize, setImageOriginalSize] = useState({ width: 1, height: 1 });
+  const [imageLayoutSize, setImageLayoutSize] = useState({ width: 0, height: 0 });
 
   const requestMediaPermission = async (): Promise<boolean> => {
     if (Platform.OS !== 'web') {
@@ -69,8 +74,14 @@ export default function ExploreScreen() {
     });
 
     if (!result.canceled && result.assets[0]) {
-      setImageUri(result.assets[0].uri);
+      const asset = result.assets[0];
+      setImageUri(asset.uri);
+      setImageOriginalSize({
+        width: asset.width || 1,
+        height: asset.height || 1,
+      });
       setResults(null);
+      setImageLayoutSize({ width: 0, height: 0 });
       setScreenState('preview');
     }
   }, []);
@@ -86,8 +97,14 @@ export default function ExploreScreen() {
     });
 
     if (!result.canceled && result.assets[0]) {
-      setImageUri(result.assets[0].uri);
+      const asset = result.assets[0];
+      setImageUri(asset.uri);
+      setImageOriginalSize({
+        width: asset.width || 1,
+        height: asset.height || 1,
+      });
       setResults(null);
+      setImageLayoutSize({ width: 0, height: 0 });
       setScreenState('preview');
     }
   }, []);
@@ -96,8 +113,24 @@ export default function ExploreScreen() {
     setImageUri(null);
     setResults(null);
     setErrorMessage('');
+    setImageLayoutSize({ width: 0, height: 0 });
+    setImageOriginalSize({ width: 1, height: 1 });
     setScreenState('idle');
   }, []);
+
+  const convertUriToBase64 = async (uri: string): Promise<string> => {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result?.toString().split(',')[1];
+        resolve(base64String || '');
+      };
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(blob);
+    });
+  };
 
   const handleIdentify = useCallback(async () => {
     if (!imageUri) return;
@@ -106,28 +139,15 @@ export default function ExploreScreen() {
     setErrorMessage('');
 
     try {
-      const filename = imageUri.split('/').pop() ?? 'ore_sample.jpg';
-      const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : 'image/jpeg';
+      const base64Data = await convertUriToBase64(imageUri);
 
-      const formData = new FormData();
-      
-      // Cast to 'any' allows React Native's custom non-browser wrapper to accept the file payload
-      formData.append('image', { 
-        uri: imageUri, 
-        name: filename, 
-        type 
-      } as any);
-
-      // Successfully linked to your active Render cloud instance
       const response = await fetch('https://oreguide-backend.onrender.com/api/v1/identify', {
         method: 'POST',
         headers: { 
-          'Accept': 'application/json'
-          // 'Content-Type' is deliberately omitted here! 
-          // This allows the browser/device environments to compute boundary markers automatically.
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: formData,
+        body: JSON.stringify({ image: base64Data }),
       });
 
       if (response.status === 413) throw new Error('Image too large. Maximum size is 10 MB.');
@@ -145,6 +165,14 @@ export default function ExploreScreen() {
       setScreenState('error');
     }
   }, [imageUri]);
+
+  // Captures layout bounds of the stable parent view container
+  const handleContainerLayout = (event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    if (width > 0 && height > 0) {
+      setImageLayoutSize({ width, height });
+    }
+  };
 
   const canIdentify = screenState === 'preview' || screenState === 'error';
 
@@ -164,8 +192,90 @@ export default function ExploreScreen() {
         {/* Image Zone */}
         <View style={styles.imageZone}>
           {imageUri ? (
-            <View style={styles.imagePreviewWrapper}>
-              <Image source={{ uri: imageUri }} style={styles.previewImage} resizeMode="cover" />
+            /* CRITICAL FIX: onLayout attached here guarantees continuous stability when the results view mounts */
+            <View 
+              style={[styles.imagePreviewWrapper, { position: 'relative', backgroundColor: '#000' }]}
+              onLayout={handleContainerLayout}
+            >
+              <Image 
+                source={{ uri: imageUri }} 
+                style={styles.previewImage} 
+                resizeMode="contain" 
+              />
+              
+              {/* Absolute Canvas Overlay Engine Layer */}
+              {imageLayoutSize.width > 0 && results?.detections?.map((detection: InferenceDetection, index: number) => {
+                if (!detection.bounding_box) return null;
+                const { x_min, y_min, x_max, y_max } = detection.bounding_box;
+
+                const origWidth = imageOriginalSize.width || 1;
+                const origHeight = imageOriginalSize.height || 1;
+
+                const imageAspect = origWidth / origHeight;
+                const layoutAspect = imageLayoutSize.width / imageLayoutSize.height;
+
+                let renderWidth = imageLayoutSize.width;
+                let renderHeight = imageLayoutSize.height;
+                let offsetX = 0;
+                let offsetY = 0;
+
+                if (imageAspect > layoutAspect) {
+                  // Image is wider than container view -> Letterboxed
+                  renderHeight = imageLayoutSize.width / imageAspect;
+                  offsetY = (imageLayoutSize.height - renderHeight) / 2;
+                } else {
+                  // Image is taller than container view -> Pillarboxed
+                  renderWidth = imageLayoutSize.height * imageAspect;
+                  offsetX = (imageLayoutSize.width - renderWidth) / 2;
+                }
+
+                const scaleX = renderWidth / origWidth;
+                const scaleY = renderHeight / origHeight;
+
+                const boxLeft = offsetX + (x_min * scaleX);
+                const boxTop = offsetY + (y_min * scaleY);
+                const boxWidth = (x_max - x_min) * scaleX;
+                const boxHeight = (y_max - y_min) * scaleY;
+
+                const isNearTopEdge = boxTop < 25;
+
+                return (
+                  <View
+                    key={`box-${index}`}
+                    style={{
+                      position: 'absolute',
+                      left: boxLeft,
+                      top: boxTop,
+                      width: boxWidth,
+                      height: boxHeight,
+                      borderWidth: 2,
+                      borderColor: THEME.colors.primary,
+                      backgroundColor: 'rgba(234, 179, 8, 0.1)',
+                      zIndex: 10,
+                    }}
+                  >
+                    {/* Floating Label Badge Box */}
+                    <View
+                      style={{
+                        position: 'absolute',
+                        top: isNearTopEdge ? 0 : -22,
+                        left: -2,
+                        backgroundColor: THEME.colors.primary,
+                        paddingHorizontal: 6,
+                        paddingVertical: 2,
+                        borderTopLeftRadius: isNearTopEdge ? 0 : 4,
+                        borderTopRightRadius: 4,
+                        borderBottomLeftRadius: isNearTopEdge ? 4 : 0,
+                      }}
+                    >
+                      <Text style={{ color: '#000', fontSize: 10, fontWeight: 'bold' }}>
+                        {detection.label} {Math.round(detection.confidence * 100)}%
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })}
+
               <TouchableOpacity style={styles.clearButton} onPress={handleClearImage} activeOpacity={0.8}>
                 <RotateCcw size={16} color={THEME.colors.surface} />
                 <Text style={styles.clearButtonText}>Retake</Text>
@@ -223,7 +333,7 @@ export default function ExploreScreen() {
           </View>
         )}
 
-        {/* Results */}
+        {/* Results Metadata Section */}
         {screenState === 'results' && results && (
           <View style={styles.resultsSection}>
             <View style={styles.resultsMeta}>
