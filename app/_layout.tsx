@@ -1,5 +1,4 @@
-//_layout.tsx
-
+import NetInfo from '@react-native-community/netinfo'; // Added import
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -29,6 +28,7 @@ function RootLayoutContent() {
   const colorScheme = useColorScheme();
   const { loading: authLoading } = useAuth();
   const [showOverlay, setShowOverlay] = useState(true);
+  const [networkSpeed, setNetworkSpeed] = useState(1); // Added state
 
   // Animation Values
   const oreTranslateX = useSharedValue(SCREEN_WIDTH);
@@ -41,6 +41,11 @@ function RootLayoutContent() {
   const iconScale = useSharedValue(1);
 
   useEffect(() => {
+    // Detect network speed
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setNetworkSpeed(state.type === 'wifi' ? 1 : 0.5);
+    });
+
     if (!authLoading) {
       SplashScreen.hideAsync();
 
@@ -66,9 +71,10 @@ function RootLayoutContent() {
             iconTranslateX.value = withTiming(-110, { duration: 400, easing: Easing.out(Easing.quad) });
 
             setTimeout(() => {
-              loadingBarWidth.value = withTiming(240, { duration: 5000, easing: Easing.linear }, (finished) => {
+              // ONLY CHANGE: Duration is now divided by networkSpeed
+              const duration = 5000 / networkSpeed;
+              loadingBarWidth.value = withTiming(240, { duration, easing: Easing.linear }, (finished) => {
                 if (finished) {
-                  // SHAKE THEN ZOOM
                   iconShake.value = withRepeat(
                     withSequence(
                       withTiming(10, { duration: 100 }),
@@ -88,9 +94,10 @@ function RootLayoutContent() {
         }, 600);
       }, 1500); 
     }
-  }, [authLoading]);
+    return () => unsubscribe();
+  }, [authLoading, networkSpeed]);
 
-  // Styles
+  // Styles remain identical to your original code
   const oreStyle = useAnimatedStyle(() => ({ transform: [{ translateX: oreTranslateX.value }] }));
   const guideStyle = useAnimatedStyle(() => ({ transform: [{ translateX: guideTranslateX.value }] }));
   const iconStyle = useAnimatedStyle(() => ({
