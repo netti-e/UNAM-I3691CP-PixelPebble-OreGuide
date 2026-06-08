@@ -1,15 +1,58 @@
 // app/(auth)/login.tsx
 
 import { Link, router } from 'expo-router';
-import { Lock, Mail } from 'lucide-react-native';
-import React from 'react';
-import { Image, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { THEME } from '../../constants/theme';
+import { useAuth } from '../../hooks/use-auth';
 import { styles } from './login.styles';
 
 export default function LoginScreen() {
-  const handleLoginBypass = () => {
-    router.replace('/(tabs)');
+  const { login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [secureText, setSecureText] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email.trim() || !password) {
+      Alert.alert('Verification Failed', 'Please fill in both Email and Password fields.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await login({ email: email.trim(), password });
+      router.replace('/(tabs)');
+    } catch (error: any) {
+      let errorMessage = 'An error occurred during login. Please try again.';
+      if (error && error.code) {
+        switch (error.code) {
+          case 'auth/invalid-email':
+            errorMessage = 'The email address is invalid.';
+            break;
+          case 'auth/user-disabled':
+            errorMessage = 'This user account has been disabled.';
+            break;
+          case 'auth/user-not-found':
+          case 'auth/wrong-password':
+          case 'auth/invalid-credential':
+            errorMessage = 'Incorrect email or password.';
+            break;
+          case 'auth/too-many-requests':
+            errorMessage = 'Too many failed login attempts. Please try again later.';
+            break;
+          default:
+            errorMessage = error.message;
+        }
+      } else if (error && error.message) {
+        errorMessage = error.message;
+      }
+      Alert.alert('Login Failed', errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -38,6 +81,8 @@ export default function LoginScreen() {
               placeholderTextColor={THEME.colors.textMuted}
               keyboardType="email-address"
               autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
             />
           </View>
 
@@ -47,8 +92,18 @@ export default function LoginScreen() {
               style={styles.input}
               placeholder="Password"
               placeholderTextColor={THEME.colors.textMuted}
-              secureTextEntry
+              secureTextEntry={secureText}
+              value={password}
+              onChangeText={setPassword}
+              autoCapitalize="none"
             />
+            <TouchableOpacity onPress={() => setSecureText(!secureText)} style={{ padding: 4 }}>
+              {secureText ? (
+                <Eye size={20} color={THEME.colors.textMuted} />
+              ) : (
+                <EyeOff size={20} color={THEME.colors.textMuted} />
+              )}
+            </TouchableOpacity>
           </View>
 
           <View style={styles.optionsContainer}>
@@ -63,8 +118,17 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={handleLoginBypass}>
-            <Text style={styles.buttonText}>Log In</Text>
+          <TouchableOpacity 
+            style={[styles.button, loading && { opacity: 0.7 }]} 
+            onPress={handleLogin}
+            disabled={loading}
+            activeOpacity={0.8}
+          >
+            {loading ? (
+              <ActivityIndicator color="#FFFFFF" size="small" />
+            ) : (
+              <Text style={styles.buttonText}>Log In</Text>
+            )}
           </TouchableOpacity>
         </View>
       </View>
