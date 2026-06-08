@@ -1,5 +1,5 @@
 // app/(tabs)/explore.tsx
-// [STATUS: OPERATIONAL] — Hardened base64 pipeline with stable container tracking
+// [STATUS: OPERATIONAL] — Migrated to Server-Side Workflow Visualization Architecture with Deep Recursive Scanner
 
 import * as ImagePicker from 'expo-image-picker';
 import { Camera, ChevronRight, Image as ImageIcon, RotateCcw, Zap } from 'lucide-react-native';
@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  LayoutChangeEvent,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -27,10 +26,6 @@ export default function ExploreScreen() {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [results, setResults] = useState<InferenceResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
-
-  // Dimension tracking engines
-  const [imageOriginalSize, setImageOriginalSize] = useState({ width: 1, height: 1 });
-  const [imageLayoutSize, setImageLayoutSize] = useState({ width: 0, height: 0 });
 
   const requestMediaPermission = async (): Promise<boolean> => {
     if (Platform.OS !== 'web') {
@@ -76,12 +71,7 @@ export default function ExploreScreen() {
     if (!result.canceled && result.assets[0]) {
       const asset = result.assets[0];
       setImageUri(asset.uri);
-      setImageOriginalSize({
-        width: asset.width || 1,
-        height: asset.height || 1,
-      });
       setResults(null);
-      setImageLayoutSize({ width: 0, height: 0 });
       setScreenState('preview');
     }
   }, []);
@@ -99,12 +89,7 @@ export default function ExploreScreen() {
     if (!result.canceled && result.assets[0]) {
       const asset = result.assets[0];
       setImageUri(asset.uri);
-      setImageOriginalSize({
-        width: asset.width || 1,
-        height: asset.height || 1,
-      });
       setResults(null);
-      setImageLayoutSize({ width: 0, height: 0 });
       setScreenState('preview');
     }
   }, []);
@@ -113,8 +98,6 @@ export default function ExploreScreen() {
     setImageUri(null);
     setResults(null);
     setErrorMessage('');
-    setImageLayoutSize({ width: 0, height: 0 });
-    setImageOriginalSize({ width: 1, height: 1 });
     setScreenState('idle');
   }, []);
 
@@ -141,37 +124,147 @@ export default function ExploreScreen() {
     try {
       const base64Data = await convertUriToBase64(imageUri);
 
-      const response = await fetch('https://oreguide-backend.onrender.com/api/v1/identify', {
+      // CONFIGURATION CONSTANTS
+      const ROBOFLOW_API_KEY = "6GmgjxeeRS4an4UYkaMW";
+      const WORKSPACE_ID = "raymonds-workspace-jtsuf";
+      const WORKFLOW_ID = "detect-count-and-visualize-2";
+
+      const response = await fetch(`https://serverless.roboflow.com/infer/workflows/${WORKSPACE_ID}/${WORKFLOW_ID}`, {
         method: 'POST',
         headers: { 
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ image: base64Data }),
+        body: JSON.stringify({ 
+          api_key: ROBOFLOW_API_KEY,
+          inputs: {
+            image: {
+              type: "base64",
+              value: base64Data
+            }
+          }
+        }),
       });
 
-      if (response.status === 413) throw new Error('Image too large. Maximum size is 10 MB.');
-      if (response.status === 400) throw new Error('Invalid image data. Please capture a clearer photo.');
-      if (response.status === 422) throw new Error('Unprocessable image parameters encountered.');
-      if (response.status >= 500) throw new Error('Cloud engine server error. Please try again shortly.');
-      if (!response.ok) throw new Error(`Unexpected connection breakdown (${response.status}).`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Roboflow cloud error (${response.status}): ${errorText || 'Invalid execution configuration'}`);
+      }
 
-      const data: InferenceResponse = await response.json();
-      setResults(data);
+      const rawData = await response.json();
+
+      // ==========================================
+      // DEEP RECURSIVE PAYLOAD SCANNERS
+      // ==========================================
+      
+      // 1. Air-tight recursive finder for the structured predictions array
+      const extractPredictions = (data: any): any[] => {
+        if (!data || typeof data !== 'object') return [];
+
+        if (Array.isArray(data)) {
+          if (data.length > 0 && typeof data[0] === 'object') {
+            const first = data[0];
+            // Identify standard object-detection tokens returned by the core model blocks
+            if ('confidence' in first || 'class' in first || 'class_id' in first || 'label' in first) {
+              return data;
+            }
+          }
+          for (const item of data) {
+            const nested = extractPredictions(item);
+            if (nested.length > 0) return nested;
+          }
+        } else {
+          // Check common workflow output/step keys explicitly first
+          const targetKeys = ['predictions', 'detections', 'objects', 'results'];
+          for (const key of targetKeys) {
+            if (data[key] && Array.isArray(data[key])) {
+              const res = extractPredictions(data[key]);
+              if (res.length > 0) return res;
+            }
+          }
+          // Exhaustive search through remaining parameters
+          for (const key of Object.keys(data)) {
+            if (data[key] && typeof data[key] === 'object') {
+              const nested = extractPredictions(data[key]);
+              if (nested.length > 0) return nested;
+            }
+          }
+        }
+        return [];
+      };
+
+      // 2. Air-tight recursive finder for the workflow generated base64 visual frame
+      const findWorkflowImage = (obj: any): any => {
+        if (!obj || typeof obj !== 'object') return null;
+        if (obj.output_image) return obj.output_image;
+        if (obj.image && (typeof obj.image === 'string' || obj.image.value)) return obj.image;
+
+        if (Array.isArray(obj)) {
+          for (const item of obj) {
+            const found = findWorkflowImage(item);
+            if (found) return found;
+          }
+        } else {
+          for (const key of Object.keys(obj)) {
+            const found = findWorkflowImage(obj[key]);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+
+      const rawDetections = extractPredictions(rawData);
+      const workflowImage = findWorkflowImage(rawData);
+
+      // 3. Map findings into the exact structure expected by the UI layers
+      const normalizedDetections: InferenceDetection[] = rawDetections.map((item: any) => {
+        let parsedConfidence = 1.0;
+        if (typeof item.confidence === 'number') {
+          parsedConfidence = item.confidence;
+        } else if (typeof item.confidence === 'string') {
+          const val = parseFloat(item.confidence);
+          if (!isNaN(val)) parsedConfidence = val;
+        }
+
+        return {
+          label: item.class || item.label || "Detected Ore",
+          confidence: parsedConfidence,
+          mineral_info: {
+            colour: item.mineral_info?.colour || "See full profile details",
+            hardness: item.mineral_info?.hardness || "Available in profile",
+            common_uses: item.mineral_info?.common_uses || "Tap to view full properties",
+          }
+        };
+      });
+
+      // 4. Wrap up cleanly into standard layout payload
+      const finalResultObject: InferenceResponse = {
+        detections: normalizedDetections,
+        inference_time_ms: Math.round(rawData.inference_time_ms || rawData[0]?.inference_time || 0),
+        model_version: "Serverless Workflow Pipeline",
+      };
+
+      (finalResultObject as any).output_image = workflowImage;
+
+      setResults(finalResultObject);
       setScreenState('results');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Identification failed. Check your network routing.';
+      const message = err instanceof Error ? err.message : 'Direct identification routing failed.';
       setErrorMessage(message);
       setScreenState('error');
     }
   }, [imageUri]);
 
-  // Captures layout bounds of the stable parent view container
-  const handleContainerLayout = (event: LayoutChangeEvent) => {
-    const { width, height } = event.nativeEvent.layout;
-    if (width > 0 && height > 0) {
-      setImageLayoutSize({ width, height });
-    }
+  const getAnnotatedImageUri = (): string | null => {
+    if (!results) return null;
+    
+    const rawOutput = (results as any).output_image;
+    if (!rawOutput) return null;
+
+    const base64String = typeof rawOutput === 'string' ? rawOutput : rawOutput.value;
+    if (!base64String) return null;
+
+    return base64String.startsWith('data:') ? base64String : `data:image/jpeg;base64,${base64String}`;
   };
 
   const canIdentify = screenState === 'preview' || screenState === 'error';
@@ -192,90 +285,13 @@ export default function ExploreScreen() {
         {/* Image Zone */}
         <View style={styles.imageZone}>
           {imageUri ? (
-            /* CRITICAL FIX: onLayout attached here guarantees continuous stability when the results view mounts */
-            <View 
-              style={[styles.imagePreviewWrapper, { position: 'relative', backgroundColor: '#000' }]}
-              onLayout={handleContainerLayout}
-            >
+            <View style={[styles.imagePreviewWrapper, { position: 'relative', backgroundColor: '#000' }]}>
               <Image 
                 source={{ uri: imageUri }} 
                 style={styles.previewImage} 
                 resizeMode="contain" 
               />
               
-              {/* Absolute Canvas Overlay Engine Layer */}
-              {imageLayoutSize.width > 0 && results?.detections?.map((detection: InferenceDetection, index: number) => {
-                if (!detection.bounding_box) return null;
-                const { x_min, y_min, x_max, y_max } = detection.bounding_box;
-
-                const origWidth = imageOriginalSize.width || 1;
-                const origHeight = imageOriginalSize.height || 1;
-
-                const imageAspect = origWidth / origHeight;
-                const layoutAspect = imageLayoutSize.width / imageLayoutSize.height;
-
-                let renderWidth = imageLayoutSize.width;
-                let renderHeight = imageLayoutSize.height;
-                let offsetX = 0;
-                let offsetY = 0;
-
-                if (imageAspect > layoutAspect) {
-                  // Image is wider than container view -> Letterboxed
-                  renderHeight = imageLayoutSize.width / imageAspect;
-                  offsetY = (imageLayoutSize.height - renderHeight) / 2;
-                } else {
-                  // Image is taller than container view -> Pillarboxed
-                  renderWidth = imageLayoutSize.height * imageAspect;
-                  offsetX = (imageLayoutSize.width - renderWidth) / 2;
-                }
-
-                const scaleX = renderWidth / origWidth;
-                const scaleY = renderHeight / origHeight;
-
-                const boxLeft = offsetX + (x_min * scaleX);
-                const boxTop = offsetY + (y_min * scaleY);
-                const boxWidth = (x_max - x_min) * scaleX;
-                const boxHeight = (y_max - y_min) * scaleY;
-
-                const isNearTopEdge = boxTop < 25;
-
-                return (
-                  <View
-                    key={`box-${index}`}
-                    style={{
-                      position: 'absolute',
-                      left: boxLeft,
-                      top: boxTop,
-                      width: boxWidth,
-                      height: boxHeight,
-                      borderWidth: 2,
-                      borderColor: THEME.colors.primary,
-                      backgroundColor: 'rgba(234, 179, 8, 0.1)',
-                      zIndex: 10,
-                    }}
-                  >
-                    {/* Floating Label Badge Box */}
-                    <View
-                      style={{
-                        position: 'absolute',
-                        top: isNearTopEdge ? 0 : -22,
-                        left: -2,
-                        backgroundColor: THEME.colors.primary,
-                        paddingHorizontal: 6,
-                        paddingVertical: 2,
-                        borderTopLeftRadius: isNearTopEdge ? 0 : 4,
-                        borderTopRightRadius: 4,
-                        borderBottomLeftRadius: isNearTopEdge ? 4 : 0,
-                      }}
-                    >
-                      <Text style={{ color: '#000', fontSize: 10, fontWeight: 'bold' }}>
-                        {detection.label} {Math.round(detection.confidence * 100)}%
-                      </Text>
-                    </View>
-                  </View>
-                );
-              })}
-
               <TouchableOpacity style={styles.clearButton} onPress={handleClearImage} activeOpacity={0.8}>
                 <RotateCcw size={16} color={THEME.colors.surface} />
                 <Text style={styles.clearButtonText}>Retake</Text>
@@ -341,6 +357,25 @@ export default function ExploreScreen() {
                 {results.detections.length} detection{results.detections.length !== 1 ? 's' : ''} · {results.inference_time_ms}ms · {results.model_version}
               </Text>
             </View>
+
+            {/* Master AI Visual Analysis Frame Generated from Serverless Workflow */}
+            {getAnnotatedImageUri() && (
+              <View style={{
+                height: 240,
+                backgroundColor: '#09090B',
+                borderRadius: 12,
+                marginBottom: 20,
+                overflow: 'hidden',
+                borderWidth: 1,
+                borderColor: '#27272A'
+              }}>
+                <Image 
+                  source={{ uri: getAnnotatedImageUri()! }} 
+                  style={{ width: '100%', height: '100%' }} 
+                  resizeMode="contain" 
+                />
+              </View>
+            )}
 
             {results.detections.length === 0 ? (
               <View style={styles.noResultsCard}>
