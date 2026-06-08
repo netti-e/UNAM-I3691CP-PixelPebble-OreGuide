@@ -3,7 +3,8 @@
 import { router } from 'expo-router';
 import { LogOut, Search, User } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Image, SafeAreaView, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { FEATURED_ORES } from '../../constants/ores';
 import { THEME } from '../../constants/theme';
 import { styles } from './index.styles';
 
@@ -17,11 +18,10 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Top Navigation Row */}
       <View style={styles.headerRow}>
         <Text style={styles.title}>OreGuide</Text>
-        <TouchableOpacity 
-          style={styles.profileButton} 
+        <TouchableOpacity
+          style={styles.profileButton}
           onPress={() => setMenuOpen(!menuOpen)}
           activeOpacity={0.8}
         >
@@ -29,14 +29,12 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Dismiss Menu Backdrop Layer */}
       {menuOpen && (
         <TouchableWithoutFeedback onPress={() => setMenuOpen(false)}>
           <View style={styles.backdrop} />
         </TouchableWithoutFeedback>
       )}
 
-      {/* Absolute Context Dropdown Menu */}
       {menuOpen && (
         <View style={styles.dropdown}>
           <TouchableOpacity style={styles.dropdownItem} onPress={handleLogout} activeOpacity={0.7}>
@@ -47,7 +45,6 @@ export default function HomeScreen() {
       )}
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Mock Search Functional Bar */}
         <View style={styles.searchSection}>
           <View style={styles.searchBarPlaceholder}>
             <Search size={20} color={THEME.colors.textMuted} />
@@ -55,7 +52,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Structural Filter Categories */}
         <View style={styles.filterSection}>
           <Text style={styles.sectionTitle}>Filter by Chromatic Profile</Text>
           <View style={styles.chipContainer}>
@@ -74,6 +70,28 @@ export default function HomeScreen() {
               <View key={element} style={styles.chip}>
                 <Text style={styles.chipText}>{element}</Text>
               </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.oreSection}>
+          <Text style={styles.sectionTitle}>Ore Photo Samples</Text>
+
+          <View style={styles.oreGrid}>
+            {FEATURED_ORES.map((ore) => (
+              <TouchableOpacity key={ore.oreID} style={styles.oreCard} activeOpacity={0.85}>
+                <Image
+                   source={{ uri: ore.imageSamples[0] }}
+                   style={styles.oreImage}
+                   resizeMode="cover"
+                />
+
+                <View style={styles.oreContent}>
+                  <Text style={styles.oreName}>{ore.name}</Text>
+                  <Text style={styles.oreMeta}>{ore.chemicalComposition}</Text>
+                  <Text style={styles.oreUses}>{ore.uses}</Text>
+                </View>
+              </TouchableOpacity>
             ))}
           </View>
         </View>
