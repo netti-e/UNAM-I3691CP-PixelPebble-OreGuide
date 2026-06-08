@@ -3,7 +3,7 @@
     "name": "OreGuide",
     "slug": "OreGuide",
     "owner": "pixelpebble", 
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/ore_guide app_icon.png",
     "scheme": "oreguide",
