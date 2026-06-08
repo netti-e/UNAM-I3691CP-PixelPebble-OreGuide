@@ -2,6 +2,7 @@
   "expo": {
     "name": "OreGuide",
     "slug": "OreGuide",
+    "owner": "pixelpebble", 
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/ore_guide app_icon.png",
@@ -18,8 +19,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.OreGuide",
-      "enableProguardOptimizations": false,
+      "package": "com.pixelpebble.oreguide",
+      "enableProguardOptimizations": true,
       "allowBackup": false,
       "softwareKeyboardLayoutMode": "adjustResize"
     },
