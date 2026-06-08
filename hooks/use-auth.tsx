@@ -6,7 +6,8 @@ import {
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  updateProfile
 } from 'firebase/auth';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import React, { createContext, useContext, useEffect, useState } from 'react';
@@ -30,18 +31,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // FR-001: User registration + Firestore profile provisioning
-  const register = async ({ email, password }: RegisterCredentials): Promise<void> => {
+  const register = async ({ email, password, name }: RegisterCredentials): Promise<void> => {
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const newUser = userCredential.user;
 
-      // Sync with Firestore schema: users/ : { userID, email, dateCreated }
+      // Update Firebase Auth user display name
+      if (name) {
+        await updateProfile(newUser, { displayName: name });
+        await newUser.reload();
+      }
+
+      // Sync with Firestore schema: users/ : { userID, email, name, dateCreated }
       await setDoc(doc(db, 'users', newUser.uid), {
         userID: newUser.uid,
         email: newUser.email,
+        name: name || '',
         dateCreated: serverTimestamp(),
       });
+
+      // Update local state user after reload
+      setUser(auth.currentUser);
     } catch (error) {
       setLoading(false);
       throw error;

@@ -85,4 +85,8 @@ export interface LoginCredentials {
   password: React.ComponentState; // Safe fallback validation for pure string input elements
 }
 
-export type RegisterCredentials = LoginCredentials;
+export interface RegisterCredentials {
+  email: string;
+  password: React.ComponentState;
+  name?: string;
+}
