@@ -59,3 +59,22 @@ export const THEME = {
     },
   },
 };
+
+export const Colors = {
+  light: {
+    text: PALETTE.deepCharcoal,
+    background: PALETTE.offWhite,
+    tint: PALETTE.namibOrange,
+    icon: PALETTE.rockGray,
+    tabIconDefault: PALETTE.rockGray,
+    tabIconSelected: PALETTE.namibOrange,
+  },
+  dark: {
+    text: PALETTE.offWhite,
+    background: PALETTE.deepCharcoal,
+    tint: PALETTE.pureWhite,
+    icon: PALETTE.rockGray,
+    tabIconDefault: PALETTE.rockGray,
+    tabIconSelected: PALETTE.pureWhite,
+  },
+};

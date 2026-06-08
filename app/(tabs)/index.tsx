@@ -5,12 +5,14 @@ import { Bell, Bookmark, BookOpen, Camera, LogOut, Map as MapIcon, Search, User,
 import React, { useState } from 'react';
 import { ActivityIndicator, Image, SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { THEME } from '../../constants/theme';
+import { useAuth } from '../../hooks/use-auth';
 import { useOreSearch } from '../../hooks/use-ore-search';
 import { formatChemicalFormula } from '../../utils/format-fomula'; // Imported utility helper
 import { styles } from './index.styles';
 
 export default function HomeScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { logout, user } = useAuth();
   const {
     ores,
     loading,
@@ -19,9 +21,14 @@ export default function HomeScreen() {
     setSearchQuery
   } = useOreSearch();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setMenuOpen(false);
-    router.replace('/(auth)/login');
+    try {
+      await logout();
+      router.replace('/(auth)/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const handleActionPress = (label: string) => {
@@ -70,6 +77,14 @@ export default function HomeScreen() {
       
       {menuOpen && (
         <View style={styles.dropdown}>
+          <View style={{ paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: THEME.colors.border }}>
+            <Text style={{ fontSize: 13, fontWeight: '700', color: THEME.colors.text }} numberOfLines={1}>
+              {user?.displayName || 'Explorer'}
+            </Text>
+            <Text style={{ fontSize: 11, color: THEME.colors.textMuted }} numberOfLines={1}>
+              {user?.email || ''}
+            </Text>
+          </View>
           <TouchableOpacity style={styles.dropdownItem} onPress={handleLogout}>
             <LogOut size={18} color="#EF4444" />
             <Text style={[styles.dropdownItemText, styles.logoutText]}>Log Out</Text>
