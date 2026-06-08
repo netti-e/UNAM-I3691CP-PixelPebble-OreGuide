@@ -1,3 +1,5 @@
+// app/(tabs)/index.styles.ts
+
 import { Platform, StyleSheet } from 'react-native';
 import { THEME } from '../../constants/theme';
 
@@ -116,41 +118,5 @@ export const styles = StyleSheet.create({
     ...THEME.typography.caption,
     color: THEME.colors.text,
     fontWeight: '500',
-  },
-  oreSection: {
-    marginTop: THEME.spacing.xl,
-  },
-  oreGrid: {
-    gap: THEME.spacing.md,
-  },
-  oreCard: {
-    backgroundColor: THEME.colors.surface,
-    borderRadius: THEME.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: THEME.colors.border,
-    overflow: 'hidden',
-  },
-  oreImage: {
-    width: '100%',
-    height: 170,
-    backgroundColor: '#DAD7CF',
-  },
-  oreContent: {
-    padding: THEME.spacing.md,
-    gap: THEME.spacing.xs,
-  },
-  oreName: {
-    ...THEME.typography.body,
-    color: THEME.colors.text,
-    fontWeight: '800',
-  },
-  oreMeta: {
-    ...THEME.typography.caption,
-    color: THEME.colors.textMuted,
-    fontWeight: '700',
-  },
-  oreUses: {
-    ...THEME.typography.caption,
-    color: THEME.colors.text,
   },
 });
