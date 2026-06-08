@@ -3,6 +3,7 @@ import { ChevronLeft, Eye, EyeOff } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -12,9 +13,11 @@ import {
   View
 } from 'react-native';
 import { THEME } from '../../constants/theme';
+import { useAuth } from '../../hooks/use-auth';
 import { styles } from './register.styles';
 
 export default function RegisterScreen() {
+  const { register } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,17 +25,38 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleSignUp = async () => {
-    // 🚀 BYPASS ACTIVE: Skipping inputs & Firebase to test the Welcome UI directly!
-    try {
-      setLoading(true);
-      
-      // Tiny artificial delay to show your beautiful loading spinner
-      await new Promise((resolve) => setTimeout(resolve, 500));
+    if (!email.trim() || !password) {
+      Alert.alert('Verification Failed', 'Email and Password are required.');
+      return;
+    }
 
-      // Jump straight to your Welcome screen layout!
+    setLoading(true);
+    try {
+      await register({ email: email.trim(), password, name: name.trim() || undefined });
       router.replace('/(auth)/welcome');
-    } catch (error) {
-      console.log("Bypass navigation error:", error);
+    } catch (error: any) {
+      let errorMessage = 'An error occurred during registration. Please try again.';
+      if (error && error.code) {
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            errorMessage = 'This email address is already registered.';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'The email address is invalid.';
+            break;
+          case 'auth/operation-not-allowed':
+            errorMessage = 'Email/password registration is not enabled.';
+            break;
+          case 'auth/weak-password':
+            errorMessage = 'The password is too weak. Please use a password with at least 6 characters.';
+            break;
+          default:
+            errorMessage = error.message;
+        }
+      } else if (error && error.message) {
+        errorMessage = error.message;
+      }
+      Alert.alert('Registration Failed', errorMessage);
     } finally {
       setLoading(false);
     }

@@ -1,10 +1,20 @@
-// app/(tabs)/_layout.tsx
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import { Camera, Heart, Home, Map as MapIcon } from 'lucide-react-native';
 import React from 'react';
 import { THEME } from '../../constants/theme';
+import { useAuth } from '../../hooks/use-auth';
 
 export default function TabsLayout() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return null;
+  }
+
+  if (!user) {
+    return <Redirect href="/(auth)/login" />;
+  }
+
   return (
     <Tabs
       screenOptions={{

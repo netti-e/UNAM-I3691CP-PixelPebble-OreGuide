@@ -78,6 +78,7 @@ export interface AuthContextType {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
   logout: () => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
 }
 
 export interface LoginCredentials {
@@ -85,4 +86,8 @@ export interface LoginCredentials {
   password: React.ComponentState; // Safe fallback validation for pure string input elements
 }
 
-export type RegisterCredentials = LoginCredentials;
+export interface RegisterCredentials {
+  email: string;
+  password: React.ComponentState;
+  name?: string;
+}
