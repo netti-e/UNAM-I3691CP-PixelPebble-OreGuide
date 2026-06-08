@@ -1,20 +1,44 @@
 // app/modal.tsx
+// [STATUS: EDIT] — Integrated useFavorites hook and added heart toggle button
 
 import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Cpu, Layers, ShieldAlert, X } from 'lucide-react-native';
+import { Cpu, Layers, ShieldAlert, X, Heart } from 'lucide-react-native';
 import React, { useMemo } from 'react';
-import { Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { ALL_ORES } from '../constants/ores';
 import { THEME } from '../constants/theme';
-import { formatChemicalFormula } from '../utils/format-fomula'; // Imported utility helper
+import { formatChemicalFormula } from '../utils/format-fomula';
+import { useFavorites } from '../hooks/use-favorites';
+import { useAuth } from '../hooks/use-auth';
 
 export default function ModalScreen() {
   const { oreID } = useLocalSearchParams<{ oreID: string }>();
+  const { user } = useAuth();
+  const { isFavorite, addFavorite, removeFavorite, loading } = useFavorites();
 
   const oreData = useMemo(() => {
     return ALL_ORES.find(item => item.oreID === oreID);
   }, [oreID]);
+
+  const handleFavoriteToggle = async () => {
+    if (!user) {
+      alert("Please log in to save favorites.");
+      return;
+    }
+    if (!oreID) return;
+    
+    try {
+      if (isFavorite(oreID)) {
+        await removeFavorite(oreID);
+      } else {
+        await addFavorite(oreID);
+      }
+    } catch (err) {
+      console.error("Failed to toggle favorite:", err);
+      alert("Failed to update favorites. Please try again.");
+    }
+  };
 
   if (!oreData) {
     return (
@@ -27,6 +51,8 @@ export default function ModalScreen() {
       </View>
     );
   }
+
+  const isSaved = isFavorite(oreID as string);
 
   return (
     <View style={styles.container}>
@@ -43,16 +69,32 @@ export default function ModalScreen() {
           <View style={[styles.heroImage, styles.fallbackImageBg]} />
         )}
         
-        <TouchableOpacity style={styles.closeActionChip} onPress={() => router.back()}>
-          <X size={20} color="#FFF" />
-        </TouchableOpacity>
+        <View style={styles.headerActionsRow}>
+          <TouchableOpacity 
+            style={styles.actionChip} 
+            onPress={handleFavoriteToggle}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <Heart 
+                size={20} 
+                color={isSaved ? THEME.colors.primary : "#FFF"} 
+                fill={isSaved ? THEME.colors.primary : "transparent"} 
+              />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionChip} onPress={() => router.back()}>
+            <X size={20} color="#FFF" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         <View style={styles.identityRow}>
           <Text style={styles.oreTitle}>{oreData.name}</Text>
           <View style={styles.formulaBadge}>
-            {/* Applied formatChemicalFormula helper to transform string typography */}
             <Text style={styles.formulaText}>
               {formatChemicalFormula(oreData.chemicalComposition)}
             </Text>
@@ -108,13 +150,21 @@ const styles = StyleSheet.create({
   fallbackImageBg: {
     backgroundColor: THEME.colors.border,
   },
-  closeActionChip: {
+  headerActionsRow: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 50 : 20,
     right: 20,
+    flexDirection: 'row',
+    gap: 12,
+  },
+  actionChip: {
     backgroundColor: 'rgba(15, 23, 42, 0.6)',
     padding: 8,
     borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 36,
+    height: 36,
   },
   scrollContainer: {
     padding: 24,
