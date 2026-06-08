@@ -34,7 +34,7 @@ function RootLayoutContent() {
   const oreTranslateX = useSharedValue(SCREEN_WIDTH);
   const guideTranslateX = useSharedValue(-SCREEN_WIDTH);
   const iconTranslateY = useSharedValue(-SCREEN_HEIGHT);
-  const iconTranslateX = useSharedValue(90);
+  const iconTranslateX = useSharedValue(130);
   const iconRotation = useSharedValue(0);
   const loadingBarWidth = useSharedValue(0);
   const iconShake = useSharedValue(0);
@@ -50,7 +50,7 @@ function RootLayoutContent() {
       setTimeout(() => {
         iconTranslateY.value = withTiming(-85, { duration: 600, easing: Easing.out(Easing.quad) });
         setTimeout(() => {
-          iconTranslateX.value = withTiming(-110, { duration: 1500, easing: Easing.linear });
+          iconTranslateX.value = withTiming(-90, { duration: 1500, easing: Easing.linear });
           iconRotation.value = withTiming(-360, { duration: 1500, easing: Easing.linear });
           
           iconTranslateY.value = withRepeat(
@@ -62,8 +62,8 @@ function RootLayoutContent() {
           );
 
           setTimeout(() => {
-            iconTranslateY.value = withTiming(5, { duration: 400, easing: Easing.out(Easing.quad) });
-            iconTranslateX.value = withTiming(-150, { duration: 400, easing: Easing.out(Easing.quad) });
+            iconTranslateY.value = withTiming(0, { duration: 400, easing: Easing.out(Easing.quad) });
+            iconTranslateX.value = withTiming(-110, { duration: 400, easing: Easing.out(Easing.quad) });
 
             setTimeout(() => {
               loadingBarWidth.value = withTiming(240, { duration: 5000, easing: Easing.linear }, (finished) => {
@@ -118,7 +118,7 @@ function RootLayoutContent() {
         <View style={styles.overlayCanvas}>
           <View style={styles.animationCenteringContainer}>
             <View style={styles.textRow}>
-              <Animated.View style={oreStyle}><Text style={styles.brandTextWhite}>ORE </Text></Animated.View>
+              <Animated.View style={oreStyle}><Text style={styles.brandTextWhite}>RE </Text></Animated.View>
               <Animated.View style={guideStyle}><Text style={styles.brandTextBlack}>GUIDE</Text></Animated.View>
             </View>
             
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   overlayCanvas: { ...StyleSheet.absoluteFillObject, backgroundColor: '#E97A34', zIndex: 100 },
   animationCenteringContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  textRow: { flexDirection: 'row', justifyContent: 'center', width: 240 },
+  textRow: { flexDirection: 'row', justifyContent: 'center', width: 240, marginLeft: 45, },
   loadingContainer: { width: 240, alignItems: 'flex-start' },
   brandTextWhite: { fontSize: 32, fontWeight: '900', color: '#FFFFFF', letterSpacing: 4 },
   brandTextBlack: { fontSize: 32, fontWeight: '900', color: '#000000', letterSpacing: 4 },
