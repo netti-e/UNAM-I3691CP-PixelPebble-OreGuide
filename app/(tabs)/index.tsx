@@ -1,25 +1,55 @@
+// app/(tabs)/index.tsx
+
 import { router } from 'expo-router';
-import { Bell, Bookmark, BookOpen, Camera, LogOut, Map as MapIcon, Search, User } from 'lucide-react-native';
+import { Bell, Bookmark, BookOpen, Camera, LogOut, Map as MapIcon, Search, User, WifiOff } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { ActivityIndicator, Image, SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { THEME } from '../../constants/theme';
+import { useOreSearch } from '../../hooks/use-ore-search';
+import { formatChemicalFormula } from '../../utils/format-fomula'; // Imported utility helper
 import { styles } from './index.styles';
 
 export default function HomeScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const {
+    ores,
+    loading,
+    isOfflineFallback,
+    searchQuery,
+    setSearchQuery
+  } = useOreSearch();
 
   const handleLogout = () => {
     setMenuOpen(false);
     router.replace('/(auth)/login');
   };
 
-  const recentScans = [
-    { id: '1', name: 'Gold Ore', mine: 'Otjikoto Mine' },
-    { id: '2', name: 'Copper Ore', mine: 'Tsumeb Mine' },
-  ];
+  const handleActionPress = (label: string) => {
+    switch (label) {
+      case 'Scan Ore':
+        router.push('/(tabs)/explore');
+        break;
+      case 'Explore Map':
+        router.push('/(tabs)/map');
+        break;
+      case 'Saved Ores':
+        router.push('/(tabs)/favorites');
+        break;
+      default:
+        break;
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Network Alert Flag */}
+      {isOfflineFallback && (
+        <View style={{ backgroundColor: '#F59E0B', paddingVertical: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 }}>
+          <WifiOff size={14} color="#FFF" />
+          <Text style={{ color: '#FFF', fontSize: 12, fontWeight: '600' }}>Viewing Offline Specimen Cache</Text>
+        </View>
+      )}
+
       {/* Top Header */}
       <View style={styles.headerRow}>
         <Text style={styles.title}>OreGuide</Text>
@@ -32,7 +62,12 @@ export default function HomeScreen() {
       </View>
 
       {/* Dropdown Menu */}
-      {menuOpen && <TouchableWithoutFeedback onPress={() => setMenuOpen(false)}><View style={styles.backdrop} /></TouchableWithoutFeedback>}
+      {menuOpen && (
+        <TouchableWithoutFeedback onPress={() => setMenuOpen(false)}>
+          <View style={styles.backdrop} />
+        </TouchableWithoutFeedback>
+      )}
+      
       {menuOpen && (
         <View style={styles.dropdown}>
           <TouchableOpacity style={styles.dropdownItem} onPress={handleLogout}>
@@ -42,12 +77,18 @@ export default function HomeScreen() {
         </View>
       )}
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Search Bar */}
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* Active Search Input Block */}
         <View style={styles.searchSection}>
-          <View style={styles.searchBarPlaceholder}>
+          <View style={[styles.searchBarPlaceholder, { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12 }]}>
             <Search size={20} color={THEME.colors.textMuted} />
-            <Text style={styles.searchPlaceholderText}>Search minerals by name...</Text>
+            <TextInput
+              style={[styles.searchPlaceholderText, { flex: 1, color: THEME.colors.text, marginLeft: 8, height: 40 }]}
+              placeholder="Search minerals by name..."
+              placeholderTextColor={THEME.colors.textMuted}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
           </View>
         </View>
 
@@ -60,29 +101,61 @@ export default function HomeScreen() {
             { icon: BookOpen, label: 'Learn' },
             { icon: Bookmark, label: 'Saved Ores' },
           ].map((item, i) => (
-            <TouchableOpacity key={i} style={styles.actionCard}>
+            <TouchableOpacity 
+              key={i} 
+              style={styles.actionCard}
+              onPress={() => handleActionPress(item.label)}
+              activeOpacity={0.75}
+            >
               <item.icon size={24} color={THEME.colors.primary} />
               <Text style={styles.actionLabel}>{item.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* Recent Scans */}
-        <Text style={styles.sectionTitle}>RECENT SCANS</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20 }}>
-          {recentScans.map((item) => (
-            <View key={item.id} style={styles.scanCard}>
-              <View style={styles.scanImagePlaceholder} />
-              <Text style={styles.scanName}>{item.name}</Text>
-              <Text style={styles.scanMine}>{item.mine}</Text>
-            </View>
-          ))}
-        </ScrollView>
+        {/* Dynamic Recent Scans */}
+        <Text style={styles.sectionTitle}>RECENT MINERALS & SCANS</Text>
+        
+        {loading ? (
+          <View style={{ height: 140, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="small" color={THEME.colors.primary} />
+          </View>
+        ) : ores.length === 0 ? (
+          <View style={{ height: 140, justifyContent: 'center', alignItems: 'center', backgroundColor: THEME.colors.background, borderColor: THEME.colors.border, borderWidth: 1, borderRadius: 12, marginBottom: 20, paddingHorizontal: 16 }}>
+            <Text style={{ color: THEME.colors.textMuted, fontSize: 13, textAlign: 'center' }}>No mineral matches found for your current search.</Text>
+          </View>
+        ) : (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20 }}>
+            {ores.map((item) => (
+              <TouchableOpacity 
+                key={item.oreID} 
+                style={styles.scanCard}
+                activeOpacity={0.85}
+                onPress={() => router.push({ pathname: '/modal', params: { oreID: item.oreID } })}
+              >
+                {item.imageSamples.length > 0 ? (
+                  <Image 
+                    source={{ uri: item.imageSamples[0] }} 
+                    style={[styles.scanImagePlaceholder, { backgroundColor: 'transparent' }]} 
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={styles.scanImagePlaceholder} />
+                )}
+                <Text style={styles.scanName} numberOfLines={1}>{item.name}</Text>
+                {/* Applied formatChemicalFormula rendering layout below */}
+                <Text style={styles.scanMine} numberOfLines={1}>
+                  {formatChemicalFormula(item.chemicalComposition)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
 
         {/* Heritage Banner */}
         <View style={styles.banner}>
           <Text style={styles.bannerTitle}>Namibia's Mineral Heritage</Text>
-          <TouchableOpacity style={styles.bannerButton}>
+          <TouchableOpacity style={styles.bannerButton} activeOpacity={0.8}>
             <Text style={styles.bannerButtonText}>Learn More</Text>
           </TouchableOpacity>
         </View>
