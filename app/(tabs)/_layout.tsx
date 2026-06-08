@@ -9,8 +9,14 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: THEME.colors.primary,
-        tabBarInactiveTintColor: THEME.colors.textMuted, // Ensure this exists in your theme
+        tabBarInactiveTintColor: THEME.colors.textMuted,
         headerShown: false,
+        // Set the background color here
+        tabBarStyle: {
+          backgroundColor: '#FFFFFF',
+          borderTopWidth: 1,
+          borderTopColor: '#E5E5E5', // Optional: adds a subtle separator
+        },
       }}
     >
       <Tabs.Screen

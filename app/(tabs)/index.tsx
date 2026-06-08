@@ -1,7 +1,5 @@
-// app/(tabs)/index.tsx
-
 import { router } from 'expo-router';
-import { LogOut, Search, User } from 'lucide-react-native';
+import { Bell, Bookmark, BookOpen, Camera, LogOut, Map as MapIcon, Search, User } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { SafeAreaView, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { THEME } from '../../constants/theme';
@@ -15,31 +13,29 @@ export default function HomeScreen() {
     router.replace('/(auth)/login');
   };
 
+  const recentScans = [
+    { id: '1', name: 'Gold Ore', mine: 'Otjikoto Mine' },
+    { id: '2', name: 'Copper Ore', mine: 'Tsumeb Mine' },
+  ];
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* Top Navigation Row */}
+      {/* Top Header */}
       <View style={styles.headerRow}>
         <Text style={styles.title}>OreGuide</Text>
-        <TouchableOpacity 
-          style={styles.profileButton} 
-          onPress={() => setMenuOpen(!menuOpen)}
-          activeOpacity={0.8}
-        >
-          <User size={22} color={THEME.colors.text} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
+          <Bell size={22} color={THEME.colors.text} />
+          <TouchableOpacity style={styles.profileButton} onPress={() => setMenuOpen(!menuOpen)}>
+            <User size={22} color={THEME.colors.text} />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Dismiss Menu Backdrop Layer */}
-      {menuOpen && (
-        <TouchableWithoutFeedback onPress={() => setMenuOpen(false)}>
-          <View style={styles.backdrop} />
-        </TouchableWithoutFeedback>
-      )}
-
-      {/* Absolute Context Dropdown Menu */}
+      {/* Dropdown Menu */}
+      {menuOpen && <TouchableWithoutFeedback onPress={() => setMenuOpen(false)}><View style={styles.backdrop} /></TouchableWithoutFeedback>}
       {menuOpen && (
         <View style={styles.dropdown}>
-          <TouchableOpacity style={styles.dropdownItem} onPress={handleLogout} activeOpacity={0.7}>
+          <TouchableOpacity style={styles.dropdownItem} onPress={handleLogout}>
             <LogOut size={18} color="#EF4444" />
             <Text style={[styles.dropdownItemText, styles.logoutText]}>Log Out</Text>
           </TouchableOpacity>
@@ -47,7 +43,7 @@ export default function HomeScreen() {
       )}
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Mock Search Functional Bar */}
+        {/* Search Bar */}
         <View style={styles.searchSection}>
           <View style={styles.searchBarPlaceholder}>
             <Search size={20} color={THEME.colors.textMuted} />
@@ -55,27 +51,40 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Structural Filter Categories */}
-        <View style={styles.filterSection}>
-          <Text style={styles.sectionTitle}>Filter by Chromatic Profile</Text>
-          <View style={styles.chipContainer}>
-            {['Metallic Grey', 'Azure Blue', 'Brass Yellow', 'Deep Red'].map((color) => (
-              <View key={color} style={styles.chip}>
-                <Text style={styles.chipText}>{color}</Text>
-              </View>
-            ))}
-          </View>
+        {/* Quick Actions */}
+        <Text style={styles.sectionTitle}>QUICK ACTIONS</Text>
+        <View style={styles.actionGrid}>
+          {[
+            { icon: Camera, label: 'Scan Ore' },
+            { icon: MapIcon, label: 'Explore Map' },
+            { icon: BookOpen, label: 'Learn' },
+            { icon: Bookmark, label: 'Saved Ores' },
+          ].map((item, i) => (
+            <TouchableOpacity key={i} style={styles.actionCard}>
+              <item.icon size={24} color={THEME.colors.primary} />
+              <Text style={styles.actionLabel}>{item.label}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
-        <View style={[styles.filterSection, { marginTop: THEME.spacing.lg }]}>
-          <Text style={styles.sectionTitle}>Filter by Elemental Matrix</Text>
-          <View style={styles.chipContainer}>
-            {['Copper (Cu)', 'Iron (Fe)', 'Gold (Au)', 'Sulfur (S)'].map((element) => (
-              <View key={element} style={styles.chip}>
-                <Text style={styles.chipText}>{element}</Text>
-              </View>
-            ))}
-          </View>
+        {/* Recent Scans */}
+        <Text style={styles.sectionTitle}>RECENT SCANS</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20 }}>
+          {recentScans.map((item) => (
+            <View key={item.id} style={styles.scanCard}>
+              <View style={styles.scanImagePlaceholder} />
+              <Text style={styles.scanName}>{item.name}</Text>
+              <Text style={styles.scanMine}>{item.mine}</Text>
+            </View>
+          ))}
+        </ScrollView>
+
+        {/* Heritage Banner */}
+        <View style={styles.banner}>
+          <Text style={styles.bannerTitle}>Namibia's Mineral Heritage</Text>
+          <TouchableOpacity style={styles.bannerButton}>
+            <Text style={styles.bannerButtonText}>Learn More</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
