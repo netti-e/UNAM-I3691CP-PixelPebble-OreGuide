@@ -1,33 +1,52 @@
 // services/firebase.ts
-
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApp, getApps, initializeApp } from 'firebase/app';
-import { getReactNativePersistence, initializeAuth } from 'firebase/auth';
+import { browserLocalPersistence, initializeAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import { Platform } from 'react-native';
 
-// Keys are safely pulled from the local .env file during the Expo build process
+// Hardcoded for offline development environments to bypass missing .env variable mappings
 const firebaseConfig = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID
+  apiKey: "AIzaSyFakeKey_OreGuidePaulusLocal2026Dev", // <-- Replace with your real Firebase Project API Key string
+  authDomain: "unam-i3691cp-pixelpebble.firebaseapp.com",
+  projectId: "unam-i3691cp-pixelpebble",
+  storageBucket: "unam-i3691cp-pixelpebble.appspot.com",
+  messagingSenderId: "123456789012",
+  appId: "1:123456789012:web:abcdef1234567890"
 };
 
-// Initialize Firebase App instance safely for React Native
+// Initialize Firebase App instance safely
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Initialize Auth with persistent AsyncStorage so logins stay saved across app restarts
-const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage),
-});
+// Initialize Auth safely based on platform environment
+const createAuthInstance = () => {
+  if (Platform.OS === 'web') {
+    return initializeAuth(app, {
+      persistence: browserLocalPersistence,
+    });
+  } else {
+    const customMobilePersistence = {
+      type: 'LOCAL',
+      async _isAvailable() { return true; },
+      async _set(key: string, value: any) { await AsyncStorage.setItem(key, JSON.stringify(value)); },
+      async _get(key: string) { 
+        const val = await AsyncStorage.getItem(key); 
+        return val ? JSON.parse(val) : null; 
+      },
+      async _remove(key: string) { await AsyncStorage.removeItem(key); }
+    };
+
+    return initializeAuth(app, {
+      persistence: customMobilePersistence as any,
+    });
+  }
+};
+
+const auth = createAuthInstance();
 
 // Initialize Firestore (Database) and Storage (Images)
 const db = getFirestore(app);
 const storage = getStorage(app);
 
 export { app, auth, db, storage };
-
