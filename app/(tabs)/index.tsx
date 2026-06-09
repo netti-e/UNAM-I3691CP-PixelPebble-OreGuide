@@ -1,16 +1,19 @@
 // app/(tabs)/index.tsx
+// [STATUS: OPERATIONAL] — Home Dashboard Control Panel
 
 import { router } from 'expo-router';
 import { Bell, Bookmark, BookOpen, Camera, LogOut, Map as MapIcon, Search, User, WifiOff } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ActivityIndicator, Image, SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { THEME } from '../../constants/theme';
+import { useAuth } from '../../hooks/use-auth';
 import { useOreSearch } from '../../hooks/use-ore-search';
-import { formatChemicalFormula } from '../../utils/format-fomula'; // Imported utility helper
+import { formatChemicalFormula } from '../../utils/format-fomula';
 import { styles } from './index.styles';
 
 export default function HomeScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { logout, user } = useAuth();
   const {
     ores,
     loading,
@@ -19,11 +22,17 @@ export default function HomeScreen() {
     setSearchQuery
   } = useOreSearch();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setMenuOpen(false);
-    router.replace('/(auth)/login');
+    try {
+      await logout();
+      router.replace('/(auth)/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
+  // HANDLER UPDATED: Integrated 'Learn' case navigation pipeline
   const handleActionPress = (label: string) => {
     switch (label) {
       case 'Scan Ore':
@@ -31,6 +40,9 @@ export default function HomeScreen() {
         break;
       case 'Explore Map':
         router.push('/(tabs)/map');
+        break;
+      case 'Learn':
+        router.push('/(tabs)/learn');
         break;
       case 'Saved Ores':
         router.push('/(tabs)/favorites');
@@ -70,6 +82,14 @@ export default function HomeScreen() {
       
       {menuOpen && (
         <View style={styles.dropdown}>
+          <View style={{ paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: THEME.colors.border }}>
+            <Text style={{ fontSize: 13, fontWeight: '700', color: THEME.colors.text }} numberOfLines={1}>
+              {user?.displayName || 'Explorer'}
+            </Text>
+            <Text style={{ fontSize: 11, color: THEME.colors.textMuted }} numberOfLines={1}>
+              {user?.email || ''}
+            </Text>
+          </View>
           <TouchableOpacity style={styles.dropdownItem} onPress={handleLogout}>
             <LogOut size={18} color="#EF4444" />
             <Text style={[styles.dropdownItemText, styles.logoutText]}>Log Out</Text>
@@ -126,36 +146,51 @@ export default function HomeScreen() {
           </View>
         ) : (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20 }}>
-            {ores.map((item) => (
-              <TouchableOpacity 
-                key={item.oreID} 
-                style={styles.scanCard}
-                activeOpacity={0.85}
-                onPress={() => router.push({ pathname: '/modal', params: { oreID: item.oreID } })}
-              >
-                {item.imageSamples.length > 0 ? (
-                  <Image 
-                    source={{ uri: item.imageSamples[0] }} 
-                    style={[styles.scanImagePlaceholder, { backgroundColor: 'transparent' }]} 
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View style={styles.scanImagePlaceholder} />
-                )}
-                <Text style={styles.scanName} numberOfLines={1}>{item.name}</Text>
-                {/* Applied formatChemicalFormula rendering layout below */}
-                <Text style={styles.scanMine} numberOfLines={1}>
-                  {formatChemicalFormula(item.chemicalComposition)}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            {ores.map((item) => {
+              // BUGFIX SPECIFICATION: Safely fall back to alternative schema property naming variants 
+              const formulaString = item.chemicalComposition || item.chemicalCompostion;
+
+              return (
+                <TouchableOpacity 
+                  key={item.oreID} 
+                  style={styles.scanCard}
+                  activeOpacity={0.85}
+                  onPress={() => router.push({ pathname: '/modal', params: { oreID: item.oreID } })}
+                >
+                  {item.imageSamples && item.imageSamples.length > 0 ? (
+                    <Image 
+                      source={{ uri: item.imageSamples[0] }} 
+                      style={[styles.scanImagePlaceholder, { backgroundColor: 'transparent' }]} 
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View style={styles.scanImagePlaceholder} />
+                  )}
+                  <Text style={styles.scanName} numberOfLines={1}>{item.name}</Text>
+                  
+                  <Text style={styles.scanMine} numberOfLines={1}>
+                    {formulaString ? formatChemicalFormula(formulaString) : 'Unknown Formula'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </ScrollView>
         )}
 
         {/* Heritage Banner */}
         <View style={styles.banner}>
           <Text style={styles.bannerTitle}>Namibia's Mineral Heritage</Text>
-          <TouchableOpacity style={styles.bannerButton} activeOpacity={0.8}>
+          {/* ACTION ADDED: Wired link to pass an initial route deep-link look-up value to Learn Page */}
+          <TouchableOpacity 
+            style={styles.bannerButton} 
+            activeOpacity={0.8}
+            onPress={() => {
+              router.push({
+                pathname: '/(tabs)/learn',
+                params: { oreName: 'Quartz' } // Deep-links to display your Quartz metrics instantly
+              });
+            }}
+          >
             <Text style={styles.bannerButtonText}>Learn More</Text>
           </TouchableOpacity>
         </View>
