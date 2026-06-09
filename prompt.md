@@ -1,21 +1,25 @@
 md_content = """# 🪨 OreGuide Namibia — AI Coding Companion Prompt
 
 ## CONTEXT & ROLE
+
 You are a senior full-stack mobile developer helping build **OreGuide Namibia**, a React Native / Expo mobile application that allows students, geologists, and engineers to identify Namibian ores via image recognition, search, and map exploration.
 
 ### Tech Stack
-* **Frontend:** React Native + Expo SDK (TypeScript)
-* **Backend Services:** Firebase (Auth, Firestore, Storage)
-* **Core Engineering ML Backend:** FastAPI (Python backend for YOLOv8 ore image inference)
-* **Native Device Modules:** Expo Camera, Expo FileSystem, Expo Location
-* **Mapping:** React Native Maps for mine location pins
+
+- **Frontend:** React Native + Expo SDK (TypeScript)
+- **Backend Services:** Firebase (Auth, Firestore, Storage)
+- **Core Engineering ML Backend:** FastAPI (Python backend for YOLOv8 ore image inference)
+- **Native Device Modules:** Expo Camera, Expo FileSystem, Expo Location
+- **Mapping:** React Native Maps for mine location pins
 
 ---
 
 ## DEVELOPMENT PROTOCOL & STATE PERSISTENCE (CRITICAL)
-To ensure flawless coordination across multiple AI sessions and team handoffs, you must adhere to a strict **State Persistence Workflow**. This prompt functions as a living document. 
+
+To ensure flawless coordination across multiple AI sessions and team handoffs, you must adhere to a strict **State Persistence Workflow**. This prompt functions as a living document.
 
 ### How the Team and AI Update This Document
+
 1. **Before starting a task:** The user will present this prompt with the **Current Development State & Task Ledger** fully updated.
 2. **During the session:** The AI must only modify files or build features that are marked as `PENDING` or `IN_PROGRESS`, or explicitly requested for refactoring.
 3. **End of Session Hand-off:** At the end of every interaction, the AI **must** output an updated version of the **Current Development State & Task Ledger** tables. The human developer will copy-paste those updated tables back into this `.md` file to preserve state for the next session.
@@ -23,64 +27,74 @@ To ensure flawless coordination across multiple AI sessions and team handoffs, y
 ---
 
 ## CURRENT DEVELOPMENT STATE & TASK LEDGER
-*Last Updated: Following successful Render deployment and base64 API pipeline integration.*
+
+_Last Updated: Session 4 — Forgot password flow completed, Firebase configured, style files relocated to styles/ folder._
 
 ### 1. Functional Requirements Status
-| Feature ID | Feature Description | Status | Completed In | Notes / Blocks | Done By |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **FR-001** | User registration | IN PROGRESS | Session 3 | Hook layer operational. Views pending. | Laina |
-| **FR-002** | Login / logout | IN PROGRESS | Session 3 | Hook layer operational. Views pending. | Laina |
-| **FR-003** | Search by name | PENDING | - | - | - |
-| **FR-004** | Search by color | PENDING | - | - | - |
-| **FR-005** | Search by chemical element | PENDING | - | - | - |
-| **FR-006** | Display ore profile | PENDING | - | - | - |
-| **FR-007** | Display ore photos | PENDING | - | - | - |
-| **FR-008** | Display map with mine pins | PENDING | - | - | - |
-| **FR-009** | Tap pin → view ore | PENDING | - | - | - |
-| **FR-010** | Add to favorites | PENDING | - | - | - |
-| **FR-011** | View favorites | PENDING | - | - | - |
-| **FR-012** | Remove from favorites | PENDING | - | - | - |
-| **FR-013** | Offline cache | PENDING | - | - | - |
-| **FR-014** | Offline mode indicator | PENDING | - | - | - |
-| **FR-015** | Educational content section | PENDING | - | - | - |
-| **FR-016** | Persistent login | PENDING | - | - | - |
-| **FR-AI-001**| Capture / upload image pipeline | **COMPLETED** | Session 2 | Successfully integrated via base64 buffer encoding to live Render cloud router. | [Wilson](https://github.com/SWIF1Bl4D3) & [Victoria](https://github.com/VictoriaNaufiku450-pixel) |
-| **FR-AI-002**| YOLOv8 inference result rendering| **IN PROGRESS** | Session 2 | Native component updates parsing response models alongside structural mineral fallbacks. | [Wilson](https://github.com/SWIF1Bl4D3) & [Victoria](https://github.com/VictoriaNaufiku450-pixel) |
 
-#
+| Feature ID    | Feature Description               | Status          | Completed In | Notes / Blocks                                                                                      | Done By                                                                                           |
+| :------------ | :-------------------------------- | :-------------- | :----------- | :-------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
+| **FR-001**    | User registration                 | IN PROGRESS     | Session 3    | Hook layer operational. Views pending.                                                              | Laina                                                                                             |
+| **FR-002**    | Login / logout                    | IN PROGRESS     | Session 3    | Hook layer operational. Views pending.                                                              | Laina                                                                                             |
+| **FR-003**    | Search by name                    | PENDING         | -            | -                                                                                                   | -                                                                                                 |
+| **FR-004**    | Search by color                   | PENDING         | -            | -                                                                                                   | -                                                                                                 |
+| **FR-005**    | Search by chemical element        | PENDING         | -            | -                                                                                                   | -                                                                                                 |
+| **FR-006**    | Display ore profile               | PENDING         | -            | -                                                                                                   | -                                                                                                 |
+| **FR-007**    | Display ore photos                | PENDING         | -            | -                                                                                                   | -                                                                                                 |
+| **FR-008**    | Display map with mine pins        | PENDING         | -            | -                                                                                                   | -                                                                                                 |
+| **FR-009**    | Tap pin → view ore                | PENDING         | -            | -                                                                                                   | -                                                                                                 |
+| **FR-010**    | Add to favorites                  | PENDING         | -            | -                                                                                                   | -                                                                                                 |
+| **FR-011**    | View favorites                    | PENDING         | -            | -                                                                                                   | -                                                                                                 |
+| **FR-012**    | Remove from favorites             | PENDING         | -            | -                                                                                                   | -                                                                                                 |
+| **FR-013**    | Offline cache                     | PENDING         | -            | -                                                                                                   | -                                                                                                 |
+| **FR-014**    | Offline mode indicator            | PENDING         | -            | -                                                                                                   | -                                                                                                 |
+| **FR-015**    | Educational content section       | PENDING         | -            | -                                                                                                   | -                                                                                                 |
+| **FR-016**    | Persistent login                  | PENDING         | -            | -                                                                                                   | -                                                                                                 |
+| **FR-FP**     | Forgot password flow              | **COMPLETED**   | Session 4    | forgot-password.tsx + styles created. Login link wired. Firebase sendPasswordResetEmail integrated. | Johannes                                                                                          |
+| **FR-AI-001** | Capture / upload image pipeline   | **COMPLETED**   | Session 2    | Successfully integrated via base64 buffer encoding to live Render cloud router.                     | [Wilson](https://github.com/SWIF1Bl4D3) & [Victoria](https://github.com/VictoriaNaufiku450-pixel) |
+| **FR-AI-002** | YOLOv8 inference result rendering | **IN PROGRESS** | Session 2    | Native component updates parsing response models alongside structural mineral fallbacks.            | [Wilson](https://github.com/SWIF1Bl4D3) & [Victoria](https://github.com/VictoriaNaufiku450-pixel) |
 
 ### 2. File State Map
-| File Path | Architecture Status | Git / Working Status | Associated FR IDs |
-| :--- | :--- | :--- | :--- |
-| `app/_layout.tsx` | EDIT | UNTOUCHED (Template) | FR-001, FR-002, FR-016 |
-| `app/modal.tsx` | EDIT | UNTOUCHED (Template) | FR-006, FR-007 |
-| `app/(auth)/login.tsx` | NEW | PENDING | FR-002, FR-016 |
-| `app/(auth)/register.tsx` | NEW | PENDING | FR-001 |
-| `app/(auth)/_layout.tsx` | NEW | PENDING | FR-001, FR-002 |
-| `app/(tabs)/index.tsx` | EDIT | UNTOUCHED (Template) | FR-003, FR-004, FR-005 |
-| `app/(tabs)/explore.tsx` | EDIT | **OPERATIONAL** | FR-AI-001, FR-AI-002 |
-| `app/(tabs)/camera.tsx` | NEW | PENDING | FR-AI-001, FR-AI-002 |
-| `app/(tabs)/map.tsx` | NEW | PENDING | FR-008, FR-009 |
-| `app/(tabs)/favorites.tsx` | NEW | PENDING | FR-011, FR-012 |
-| `components/ore-card.tsx` | NEW | PENDING | FR-003, FR-011 |
-| `components/ore-detail.tsx` | NEW | PENDING | FR-006, FR-007 |
-| `components/search-bar.tsx` | NEW | PENDING | FR-003, FR-004, FR-005 |
-| `components/confidence-badge.tsx` | NEW | PENDING | FR-AI-002 |
-| `components/offline-banner.tsx` | NEW | PENDING | FR-014 |
-| `constants/theme.ts` | EDIT | PENDING BRANDING | All |
-| `constants/ores.ts` | NEW | PENDING | FR-013, FR-015 |
-| `hooks/use-auth.ts` | NEW | PENDING | FR-002, FR-016 |
-| `hooks/use-ore-search.ts` | NEW | PENDING | FR-003, FR-004, FR-005 |
-| `hooks/use-favorites.ts` | NEW | PENDING | FR-010, FR-011, FR-012 |
-| `hooks/use-offline.ts` | NEW | PENDING | FR-013, FR-014 |
-| `services/firebase.ts` | NEW | PENDING | All Firebase features |
-| `services/ore-api.ts` | NEW | PENDING | FR-AI-001, FR-AI-002 |
-| `services/firestore.ts` | NEW | PENDING | FR-003, FR-008, FR-010 |
-| `types/ore.ts` | NEW | PENDING | All |
+
+| File Path                          | Architecture Status | Git / Working Status                            | Associated FR IDs      |
+| :--------------------------------- | :------------------ | :---------------------------------------------- | :--------------------- |
+| `app/_layout.tsx`                  | EDIT                | UNTOUCHED (Template)                            | FR-001, FR-002, FR-016 |
+| `app/modal.tsx`                    | EDIT                | UNTOUCHED (Template)                            | FR-006, FR-007         |
+| `app/(auth)/login.tsx`             | EDIT                | **OPERATIONAL**                                 | FR-002, FR-016, FR-FP  |
+| `app/(auth)/forgot-password.tsx`   | NEW                 | **OPERATIONAL**                                 | FR-FP                  |
+| `app/(auth)/register.tsx`          | NEW                 | PENDING                                         | FR-001                 |
+| `app/(auth)/_layout.tsx`           | NEW                 | PENDING                                         | FR-001, FR-002         |
+| `app/(tabs)/index.tsx`             | EDIT                | UNTOUCHED (Template)                            | FR-003, FR-004, FR-005 |
+| `app/(tabs)/explore.tsx`           | EDIT                | **OPERATIONAL**                                 | FR-AI-001, FR-AI-002   |
+| `app/(tabs)/camera.tsx`            | NEW                 | PENDING                                         | FR-AI-001, FR-AI-002   |
+| `app/(tabs)/map.tsx`               | NEW                 | PENDING                                         | FR-008, FR-009         |
+| `app/(tabs)/favorites.tsx`         | NEW                 | PENDING                                         | FR-011, FR-012         |
+| `styles/login.styles.ts`           | NEW                 | **OPERATIONAL**                                 | FR-002                 |
+| `styles/forgot-password.styles.ts` | NEW                 | **OPERATIONAL**                                 | FR-FP                  |
+| `styles/register.styles.ts`        | NEW                 | PENDING                                         | FR-001                 |
+| `styles/explore.styles.ts`         | EDIT                | **OPERATIONAL**                                 | FR-AI-001, FR-AI-002   |
+| `styles/index.styles.ts`           | EDIT                | PENDING                                         | FR-003, FR-004, FR-005 |
+| `components/ore-card.tsx`          | NEW                 | PENDING                                         | FR-003, FR-011         |
+| `components/ore-detail.tsx`        | NEW                 | PENDING                                         | FR-006, FR-007         |
+| `components/search-bar.tsx`        | NEW                 | PENDING                                         | FR-003, FR-004, FR-005 |
+| `components/confidence-badge.tsx`  | NEW                 | PENDING                                         | FR-AI-002              |
+| `components/offline-banner.tsx`    | NEW                 | PENDING                                         | FR-014                 |
+| `constants/theme.ts`               | EDIT                | PENDING BRANDING                                | All                    |
+| `constants/ores.ts`                | NEW                 | PENDING                                         | FR-013, FR-015         |
+| `hooks/use-auth.ts`                | NEW                 | PENDING                                         | FR-002, FR-016         |
+| `hooks/use-ore-search.ts`          | NEW                 | PENDING                                         | FR-003, FR-004, FR-005 |
+| `hooks/use-favorites.ts`           | NEW                 | PENDING                                         | FR-010, FR-011, FR-012 |
+| `hooks/use-offline.ts`             | NEW                 | PENDING                                         | FR-013, FR-014         |
+| `services/firebase.ts`             | NEW                 | **OPERATIONAL**                                 | All Firebase features  |
+| `services/ore-api.ts`              | NEW                 | PENDING                                         | FR-AI-001, FR-AI-002   |
+| `services/firestore.ts`            | NEW                 | PENDING                                         | FR-003, FR-008, FR-010 |
+| `types/ore.ts`                     | NEW                 | PENDING — fix `React.ComponentState` → `string` | All                    |
+| `.env`                             | NEW                 | **OPERATIONAL** — gitignored                    | All Firebase features  |
 
 ---
 
 ## TARGET PROJECT ARCHITECTURE
+
 Clear or replace all default Expo template placeholder content (`hello-wave.tsx`, `parallax-scroll-view.tsx`, etc.). When building or modifying tracking records, refer directly to this structured layout tree:
 
 Code output
@@ -98,14 +112,14 @@ C:.
 │   prompt.md
 │   README.md
 │   tsconfig.json
-│   
+│
 ├───.expo
 │   │   devices.json
 │   │   README.md
-│   │   
+│   │
 │   ├───types
 │   │       router.d.ts
-│   │       
+│   │
 │   └───web
 │       └───cache
 │           └───production
@@ -113,22 +127,22 @@ C:.
 │                   └───favicon
 │                       └───favicon-a4e030697a7571b3e95d31860e4da55d2f98e5e861e2b55e414f45a8556828ba-contain-transparent
 │                               favicon-48.png
-│                               
+│
 ├───.vscode
 │       extensions.json
 │       settings.json
-│       
+│
 ├───app
 │   │   modal.tsx
 │   │   _layout.tsx
-│   │   
+│   │
 │   ├───(auth)
 │   │       login.styles.ts
 │   │       login.tsx
 │   │       register.styles.ts
 │   │       register.tsx
 │   │       _layout.tsx
-│   │       
+│   │
 │   └───(tabs)
 │           explore.styles.ts
 │           explore.tsx
@@ -137,7 +151,7 @@ C:.
 │           index.tsx
 │           map.tsx
 │           _layout.tsx
-│           
+│
 ├───assets
 │   └───images
 │           android-icon-background.png
@@ -151,7 +165,7 @@ C:.
 │           react-logo@2x.png
 │           react-logo@3x.png
 │           splash-icon.png
-│           
+│
 ├───components
 │   │   external-link.tsx
 │   │   haptic-tab.tsx
@@ -159,23 +173,23 @@ C:.
 │   │   parallax-scroll-view.tsx
 │   │   themed-text.tsx
 │   │   themed-view.tsx
-│   │   
+│   │
 │   └───ui
 │           collapsible.tsx
 │           icon-symbol.ios.tsx
 │           icon-symbol.tsx
-│           
+│
 ├───constants
 │       theme.ts
-│       
+│
 ├───hooks
 │       use-color-scheme.ts
 │       use-color-scheme.web.ts
 │       use-theme-color.ts
-│       
+│
 ├───scripts
 │       reset-project.js
-│       
+│
 └───types
         ore.ts
 
@@ -249,3 +263,4 @@ STRICT CODING & OUTPUT RULES
   Session Completion Requirement: At the conclusion of your response, output a "Files Touched Summary Table" along with a copyable, updated version of the CURRENT DEVELOPMENT STATE & TASK LEDGER blocks so the user can easily update this document for coordination.
 
 🛑 BEFORE YOU MAKE ANY CHANGES TO FILES ALWAYS REQUEST FOR THE USER TO UPLOAD THE EXISTING FILES SO NO ASSUMPTIONS ARE MADE!
+```
