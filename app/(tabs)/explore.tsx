@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { THEME } from '../../constants/theme';
 import type { InferenceDetection, InferenceResponse } from '../../types/ore';
-import { styles } from './explore.styles';
+import { styles } from '../../styles/explore.styles';
 
 type ScreenState = 'idle' | 'preview' | 'loading' | 'results' | 'error';
 

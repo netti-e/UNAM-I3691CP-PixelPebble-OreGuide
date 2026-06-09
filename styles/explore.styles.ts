@@ -1,8 +1,8 @@
 // app/(tabs)/explore.styles.ts
 // [STATUS: EDIT] — Full replacement of placeholder explore styles with FR-AI-001 layout
 
-import { StyleSheet } from 'react-native';
-import { THEME } from '../../constants/theme';
+import { StyleSheet } from "react-native";
+import { THEME } from "../constants/theme";
 
 export const styles = StyleSheet.create({
   container: {
@@ -22,7 +22,7 @@ export const styles = StyleSheet.create({
   title: {
     ...THEME.typography.h1,
     color: THEME.colors.text,
-    fontWeight: '900',
+    fontWeight: "900",
   },
   subtitle: {
     ...THEME.typography.body,
@@ -33,32 +33,32 @@ export const styles = StyleSheet.create({
   // Image Zone
   imageZone: {
     borderRadius: THEME.borderRadius.xl,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginBottom: THEME.spacing.md,
     height: 220,
     borderWidth: 1.5,
     borderColor: THEME.colors.primary,
-    borderStyle: 'dashed',
+    borderStyle: "dashed",
     backgroundColor: THEME.colors.surface,
   },
   emptyZone: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     gap: THEME.spacing.sm,
   },
   emptyIconCircle: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#FEF0E8',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#FEF0E8",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: THEME.spacing.xs,
   },
   emptyZoneTitle: {
     ...THEME.typography.body,
-    fontWeight: '600',
+    fontWeight: "600",
     color: THEME.colors.text,
   },
   emptyZoneHint: {
@@ -67,20 +67,20 @@ export const styles = StyleSheet.create({
   },
   imagePreviewWrapper: {
     flex: 1,
-    position: 'relative',
+    position: "relative",
   },
   previewImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   clearButton: {
-    position: 'absolute',
+    position: "absolute",
     top: THEME.spacing.sm,
     right: THEME.spacing.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    backgroundColor: "rgba(0,0,0,0.55)",
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: THEME.borderRadius.round,
@@ -88,20 +88,20 @@ export const styles = StyleSheet.create({
   clearButtonText: {
     ...THEME.typography.caption,
     color: THEME.colors.surface,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 
   // Action Row
   actionRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: THEME.spacing.sm,
     marginBottom: THEME.spacing.md,
   },
   primaryButton: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: THEME.spacing.sm,
     backgroundColor: THEME.colors.primary,
     borderRadius: THEME.borderRadius.lg,
@@ -109,14 +109,14 @@ export const styles = StyleSheet.create({
   },
   primaryButtonText: {
     ...THEME.typography.body,
-    fontWeight: '700',
+    fontWeight: "700",
     color: THEME.colors.surface,
   },
   secondaryButton: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: THEME.spacing.sm,
     backgroundColor: THEME.colors.surface,
     borderRadius: THEME.borderRadius.lg,
@@ -126,7 +126,7 @@ export const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     ...THEME.typography.body,
-    fontWeight: '700',
+    fontWeight: "700",
     color: THEME.colors.text,
   },
 
@@ -141,14 +141,14 @@ export const styles = StyleSheet.create({
   },
   cardLabel: {
     ...THEME.typography.caption,
-    fontWeight: '700',
+    fontWeight: "700",
     color: THEME.colors.textMuted,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 0.5,
     marginBottom: THEME.spacing.sm,
   },
   confidenceRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: THEME.spacing.sm,
     marginBottom: THEME.spacing.sm,
   },
@@ -159,7 +159,7 @@ export const styles = StyleSheet.create({
     backgroundColor: THEME.colors.background,
     borderWidth: 1,
     borderColor: THEME.colors.border,
-    alignItems: 'center',
+    alignItems: "center",
   },
   confidenceChipActive: {
     backgroundColor: THEME.colors.primary,
@@ -167,7 +167,7 @@ export const styles = StyleSheet.create({
   },
   confidenceChipText: {
     ...THEME.typography.caption,
-    fontWeight: '700',
+    fontWeight: "700",
     color: THEME.colors.textMuted,
   },
   confidenceChipTextActive: {
@@ -181,9 +181,9 @@ export const styles = StyleSheet.create({
 
   // Identify Button
   identifyButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: THEME.spacing.sm,
     backgroundColor: THEME.colors.primary,
     borderRadius: THEME.borderRadius.lg,
@@ -195,7 +195,7 @@ export const styles = StyleSheet.create({
   },
   identifyButtonText: {
     ...THEME.typography.body,
-    fontWeight: '700',
+    fontWeight: "700",
     color: THEME.colors.surface,
   },
   identifyButtonTextDisabled: {
@@ -204,22 +204,22 @@ export const styles = StyleSheet.create({
   identifyHint: {
     ...THEME.typography.caption,
     color: THEME.colors.textMuted,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: THEME.spacing.lg,
   },
 
   // Error Card
   errorCard: {
-    backgroundColor: '#FDF2F2',
+    backgroundColor: "#FDF2F2",
     borderRadius: THEME.borderRadius.xl,
     padding: THEME.spacing.lg,
     borderWidth: 1,
-    borderColor: '#F5C6C6',
+    borderColor: "#F5C6C6",
     marginTop: THEME.spacing.md,
   },
   errorTitle: {
     ...THEME.typography.body,
-    fontWeight: '700',
+    fontWeight: "700",
     color: THEME.colors.error,
     marginBottom: 4,
   },
@@ -239,7 +239,7 @@ export const styles = StyleSheet.create({
   resultsMetaText: {
     ...THEME.typography.caption,
     color: THEME.colors.textMuted,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   noResultsCard: {
     backgroundColor: THEME.colors.surface,
@@ -264,9 +264,9 @@ export const styles = StyleSheet.create({
     marginBottom: THEME.spacing.md,
   },
   detectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: THEME.spacing.sm,
   },
   detectionLabel: {
@@ -280,7 +280,7 @@ export const styles = StyleSheet.create({
   },
   confidenceBadgeText: {
     ...THEME.typography.caption,
-    fontWeight: '700',
+    fontWeight: "700",
     color: THEME.colors.surface,
   },
   detectionDivider: {
@@ -293,27 +293,27 @@ export const styles = StyleSheet.create({
     marginBottom: THEME.spacing.sm,
   },
   metaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     paddingVertical: 3,
   },
   metaLabel: {
     ...THEME.typography.caption,
     color: THEME.colors.textMuted,
-    fontWeight: '600',
+    fontWeight: "600",
     flex: 1,
   },
   metaValue: {
     ...THEME.typography.caption,
     color: THEME.colors.text,
     flex: 2,
-    textAlign: 'right',
+    textAlign: "right",
   },
   detectionFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
     gap: 4,
     paddingTop: THEME.spacing.xs,
     borderTopWidth: 1,
@@ -322,7 +322,7 @@ export const styles = StyleSheet.create({
   },
   viewProfileText: {
     ...THEME.typography.caption,
-    fontWeight: '700',
+    fontWeight: "700",
     color: THEME.colors.primary,
   },
 });

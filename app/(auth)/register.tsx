@@ -14,8 +14,7 @@ import {
 } from 'react-native';
 import { THEME } from '../../constants/theme';
 import { useAuth } from '../../hooks/use-auth';
-import { styles } from './register.styles';
-
+import { styles } from '../../styles/register.styles';
 export default function RegisterScreen() {
   const { register } = useAuth();
   const [name, setName] = useState('');

@@ -1,3 +1,4 @@
+// [STATUS: EDIT] — Wired "Forgot password?" TouchableOpacity to navigate to /(auth)/forgot-password
 // app/(auth)/login.tsx
 
 import { Link, router } from 'expo-router';
@@ -7,7 +8,7 @@ import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, Text, 
 import Svg, { Path } from 'react-native-svg';
 import { THEME } from '../../constants/theme';
 import { useAuth } from '../../hooks/use-auth';
-import { styles } from './login.styles';
+import { styles } from '../../styles/login.styles';
 
 const GoogleIcon = ({ size = 20 }: { size?: number }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24">
@@ -47,10 +48,11 @@ export default function LoginScreen() {
     try {
       await login({ email: email.trim(), password });
       router.replace('/(tabs)');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const firebaseError = error as { code?: string; message?: string };
       let errorMessage = 'An error occurred during login. Please try again.';
-      if (error && error.code) {
-        switch (error.code) {
+      if (firebaseError?.code) {
+        switch (firebaseError.code) {
           case 'auth/invalid-email':
             errorMessage = 'The email address is invalid.';
             break;
@@ -66,10 +68,10 @@ export default function LoginScreen() {
             errorMessage = 'Too many failed login attempts. Please try again later.';
             break;
           default:
-            errorMessage = error.message;
+            errorMessage = firebaseError.message ?? errorMessage;
         }
-      } else if (error && error.message) {
-        errorMessage = error.message;
+      } else if (firebaseError?.message) {
+        errorMessage = firebaseError.message;
       }
       Alert.alert('Login Failed', errorMessage);
     } finally {
@@ -82,12 +84,10 @@ export default function LoginScreen() {
     try {
       await loginWithGoogle();
       router.replace('/(tabs)');
-    } catch (error: any) {
-      // Ignore if user cancels the prompt
-      if (error && error.message && error.message.indexOf('cancelled') !== -1) {
-        return;
-      }
-      Alert.alert('Google Sign-In Failed', error.message || 'An error occurred during Google Sign-In.');
+    } catch (error: unknown) {
+      const firebaseError = error as { message?: string };
+      if (firebaseError?.message?.includes('cancelled')) return;
+      Alert.alert('Google Sign-In Failed', firebaseError?.message ?? 'An error occurred during Google Sign-In.');
     } finally {
       setLoading(false);
     }
@@ -149,7 +149,9 @@ export default function LoginScreen() {
               <View style={styles.checkbox} />
               <Text style={styles.rememberMeText}>Remember me</Text>
             </View>
-            <TouchableOpacity>
+
+            {/* ── CHANGED: navigates to forgot-password screen ── */}
+            <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')}>
               <Text style={styles.linkText}>Forgot password?</Text>
             </TouchableOpacity>
           </View>
