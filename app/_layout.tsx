@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   overlayCanvas: { ...StyleSheet.absoluteFillObject, backgroundColor: '#E97A34', zIndex: 100 },
   animationCenteringContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   textRow: { flexDirection: 'row', justifyContent: 'center', width: 240, marginLeft: 45, marginTop: 85,},
-  lottieLoading: { width: 320, height: 150,marginLeft: 30, marginTop: -50}, // Adjusted for Lottie size
+  lottieLoading: { width: 340, height: 150,marginLeft: 25, marginTop: -50}, // Adjusted for Lottie size
   brandTextWhite: { fontSize: 32, fontWeight: '900', color: '#FFFFFF', letterSpacing: 4 },
   brandTextBlack: { fontSize: 32, fontWeight: '900', color: '#000000', letterSpacing: 4 },
   iconBorder: {
