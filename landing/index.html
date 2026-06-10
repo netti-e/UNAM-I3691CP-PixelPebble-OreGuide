@@ -1,0 +1,433 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang=""> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8" lang=""> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9" lang=""> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="OreGuide – AI-powered ore identification for Namibia. Point your camera at any rock sample and get an instant identification with rich geological context.">
+        <meta name="author" content="PixelPebble – UNAM I3691CP">
+
+        <title>OreGuide | From Rock to Resource in Seconds</title>
+
+        <link rel="shortcut icon" type="image/x-icon" href="img/favicon.png">
+
+        <!-- Font Awesome CSS -->
+        <link rel="stylesheet" href="css/font-awesome.min.css">
+        <!-- Elegant Font Icons CSS -->
+        <link rel="stylesheet" href="css/elegant-font-icons.css">
+        <!-- Elegant Line Icons CSS -->
+        <link rel="stylesheet" href="css/elegant-line-icons.css">
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <!-- Venobox CSS -->
+        <link rel="stylesheet" href="css/venobox/venobox.css">
+        <!-- Slicknav CSS -->
+        <link rel="stylesheet" href="css/slicknav.min.css">
+        <!-- animate CSS -->
+        <link rel="stylesheet" href="css/animate.min.css">
+        <!-- OWL-Carousel CSS -->
+        <link rel="stylesheet" href="css/owl.carousel.css">
+        <!-- Swiper CSS -->
+        <link rel="stylesheet" href="css/swiper.min.css">
+        <!-- Main CSS -->
+        <link rel="stylesheet" href="css/main.css">
+        <!-- Responsive CSS -->
+        <link rel="stylesheet" href="css/responsive.css">
+
+        <style>
+            /* Logo sizing in navbar */
+            .navbar-brand {
+                display: inline-flex !important;
+                align-items: center;
+                white-space: nowrap;
+            }
+            .navbar-brand .logo-dark,
+            .navbar-brand .logo-light {
+                height: 36px;
+                width: 36px;
+                object-fit: cover;
+                border-radius: 8px;
+                margin-right: 8px;
+                vertical-align: middle;
+            }
+            .brand-name {
+                font-size: 20px;
+                font-weight: 700;
+                letter-spacing: -0.5px;
+                vertical-align: middle;
+                color: #D35400;
+            }
+            .navbar-fixed-top .brand-name {
+                color: #fff;
+            }
+        </style>
+
+        <script src="js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
+    </head>
+    <body data-spy="scroll" data-target="#navmenu" data-offset="70">
+        <!--[if lt IE 8]>
+            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+        <div id="preloader">
+            <div class="loader">
+                <img src="img/preloader.svg" alt="Loading...">
+            </div>
+        </div><!-- Preloader -->
+
+        <header id="header" class="header-section">
+            <div class="container">
+                <nav class="navbar">
+                    <a href="#" class="navbar-brand">
+                        <img class="logo-dark" src="img/logo-dark.png" alt="OreGuide">
+                        <img class="logo-light" src="img/logo-light.png" alt="OreGuide">
+                        <span class="brand-name">OreGuide</span>
+                    </a>
+                    <div class="d-flex menu-wrap">
+                       <div id="navmenu" class="mainmenu">
+                           <ul class="nav">
+                                <li><a data-scroll class="nav-link active" href="#home">Home <span class="sr-only">(current)</span></a></li>
+                                <li><a data-scroll class="nav-link" href="#features">Features</a></li>
+                                <li><a data-scroll class="nav-link" href="#screenshots">Screenshots</a></li>
+                                <li><a data-scroll class="nav-link" href="#download">Download</a></li>
+                            </ul>
+                       </div>
+                    </div>
+                </nav>
+            </div>
+        </header><!-- /.header-section -->
+
+        <section id="home" class="hero-section">
+            <div class="container">
+                <div class="row hero-inner">
+                    <div class="col-lg-9">
+                        <div class="hero-content">
+                            <h1>From Rock to<br>Resource in Seconds</h1>
+                            <p>OreGuide uses AI-powered image recognition to identify ore samples on the spot. Point your camera, capture the sample, and instantly discover the geology behind what you're holding.</p>
+                            <div class="hero-btn">
+                                <a href="#" class="download-btn"><img src="img/appstore.png" alt="Download on the App Store"></a>
+                                <a href="#" class="download-btn"><img src="img/playstore.png" alt="Get it on Google Play"></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hero-moc"></div>
+                </div>
+            </div>
+        </section><!-- /.hero-section -->
+
+        <section class="promo-section padding">
+            <div class="container">
+                <div class="promo-wrap row">
+                    <div class="col-md-4 col-sm-6 sm-padding">
+                        <div class="promo-content text-center">
+                            <div class="icon"><i class="icon-camera"></i></div>
+                            <h3>Point &amp; Identify</h3>
+                            <p>Aim your camera at any ore sample and get an instant AI-powered identification with confidence scoring.</p>
+                        </div>
+                    </div><!-- Promo-1 -->
+                    <div class="col-md-4 col-sm-6 sm-padding">
+                        <div class="promo-content text-center">
+                            <div class="icon"><i class="icon-layers"></i></div>
+                            <h3>Learn &amp; Explore</h3>
+                            <p>Access detailed profiles for each ore — chemical composition, formation, industrial uses, and Namibian deposits.</p>
+                        </div>
+                    </div><!-- Promo-2 -->
+                    <div class="col-md-4 col-sm-6 sm-padding">
+                        <div class="promo-content text-center">
+                            <div class="icon"><i class="icon-map"></i></div>
+                            <h3>Discover Namibia</h3>
+                            <p>Explore interactive maps showing ore deposit locations and mining regions across the country.</p>
+                        </div>
+                    </div><!-- Promo-3 -->
+                </div>
+            </div>
+        </section><!-- /.promo-section -->
+
+        <div class="video-section">
+            <div class="container">
+                <div class="video-content">
+                    <div class="play-btn"><a class="img-popup" data-autoplay="true" data-vbtype="video" href="https://www.youtube.com/watch?v=z8OWD3Bg1tQ"><i class="fa fa-play"></i></a></div>
+                </div>
+            </div>
+        </div><!-- /.video-section -->
+
+        <section id="features" class="feature-section padding">
+            <div class="container">
+                <div class="section-heading mb-60 text-center">
+                    <h2>OreGuide Features</h2>
+                    <p>Everything you need to identify, learn about, and explore Namibia's mineral heritage — all in one free app.</p>
+                </div>
+                <div id="feature-carousel" class="feature-carousel owl-carousel">
+                    <div class="feature-item">
+                        <div class="feature-content text-center">
+                            <div class="icon"><i class="icon-camera"></i></div>
+                            <h3>AI Detection</h3>
+                            <p>Machine-learning model trained on hundreds of Namibian ore specimens for accurate real-world identification.</p>
+                        </div>
+                    </div><!-- Feature-1 -->
+                    <div class="feature-item">
+                        <div class="feature-content text-center">
+                            <div class="icon"><i class="icon-layers"></i></div>
+                            <h3>Rich Ore Profiles</h3>
+                            <p>Detailed cards covering chemical composition, physical properties, formation history, and industrial applications.</p>
+                        </div>
+                    </div><!-- Feature-2 -->
+                    <div class="feature-item">
+                        <div class="feature-content text-center">
+                            <div class="icon"><i class="icon-map"></i></div>
+                            <h3>Geological Maps</h3>
+                            <p>Interactive maps showing where each ore is found across Namibia's diverse geological regions and mining sites.</p>
+                        </div>
+                    </div><!-- Feature-3 -->
+                    <div class="feature-item">
+                        <div class="feature-content text-center">
+                            <div class="icon"><i class="icon-cloud-download"></i></div>
+                            <h3>Offline Access</h3>
+                            <p>Save ore profiles for field use — all content works without an internet connection once downloaded.</p>
+                        </div>
+                    </div><!-- Feature-4 -->
+                    <div class="feature-item">
+                        <div class="feature-content text-center">
+                            <div class="icon"><i class="icon-shield"></i></div>
+                            <h3>Expert Verified</h3>
+                            <p>All geological data reviewed and verified by UNAM geoscience faculty against real field specimens.</p>
+                        </div>
+                    </div><!-- Feature-5 -->
+                    <div class="feature-item">
+                        <div class="feature-content text-center">
+                            <div class="icon"><i class="icon-heart"></i></div>
+                            <h3>Free Forever</h3>
+                            <p>OreGuide is completely free to download and use — built for students, geologists, and curious minds alike.</p>
+                        </div>
+                    </div><!-- Feature-6 -->
+                </div>
+            </div>
+        </section><!-- /.feature-section -->
+
+        <section id="screenshots" class="screenshots-section padding">
+            <div class="container">
+                <div class="section-heading mb-60 text-center">
+                    <h2 class="text-white">App Screenshots</h2>
+                    <p class="text-white">A clean, intuitive interface designed for geologists, students, and mineral enthusiasts across Namibia.</p>
+                </div>
+                <div class="swiper-container">
+                    <div class="mobile-mock">
+                        <div class="screen"></div>
+                        <div class="circle"></div>
+                    </div>
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <img class="w-100" src="img/screenshot-1.jpg" alt="OreGuide – Home Screen">
+                        </div>
+                        <div class="swiper-slide">
+                            <img class="w-100" src="img/screenshot-2.jpg" alt="OreGuide – Ore Detection">
+                        </div>
+                        <div class="swiper-slide">
+                            <img class="w-100" src="img/screenshot-3.jpg" alt="OreGuide – Ore Profile">
+                        </div>
+                        <div class="swiper-slide">
+                            <img class="w-100" src="img/screenshot-4.jpg" alt="OreGuide – Learning Page">
+                        </div>
+                        <div class="swiper-slide">
+                            <img class="w-100" src="img/screenshot-5.jpg" alt="OreGuide – Map View">
+                        </div>
+                        <div class="swiper-slide">
+                            <img class="w-100" src="img/screenshot-6.jpg" alt="OreGuide – Saved Ores">
+                        </div>
+                        <div class="swiper-slide">
+                            <img class="w-100" src="img/screenshot-7.jpg" alt="OreGuide – Search">
+                        </div>
+                        <div class="swiper-slide">
+                            <img class="w-100" src="img/screenshot-8.jpg" alt="OreGuide – Settings">
+                        </div>
+                    </div>
+                    <!-- Carousel Arrows -->
+                    <div class="swiper-next"><i class="arrow_carrot-right"></i></div>
+                    <div class="swiper-prev"><i class="arrow_carrot-left"></i></div>
+                </div>
+            </div>
+        </section><!-- /.screenshots-section -->
+
+        <section id="reviews" class="testimonial-section padding">
+            <div class="container">
+                <div class="section-heading mb-60 text-center">
+                    <h2>What People Say</h2>
+                    <p>Hear from geologists, students, and mineral enthusiasts who use OreGuide in the field and the classroom.</p>
+                </div>
+                <div id="testimonial-carousel" class="testimonial-carousel owl-carousel">
+                    <div class="testimonial-item">
+                        <p>OreGuide has completely changed how I teach introductory geology. Students can identify specimens in real time — it makes every field trip far more engaging and educational.</p>
+                        <div class="testi-footer">
+                            <img src="img/team-1.jpg" alt="profile">
+                            <h4>Dr. S. Haufiku<span>Lecturer, UNAM Geosciences</span></h4>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <p>I used to carry heavy reference books on every field survey. Now OreGuide sits in my pocket and gives me instant, accurate identifications. It's an indispensable tool for any geologist.</p>
+                        <div class="testi-footer">
+                            <img src="img/team-2.jpg" alt="profile">
+                            <h4>Anna Nghifindaka<span>Field Geologist, Namibia</span></h4>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <p>As a mining student, having access to verified ore profiles and deposit maps in one place is incredibly valuable. The offline feature means it works even in remote survey areas.</p>
+                        <div class="testi-footer">
+                            <img src="img/team-3.jpg" alt="profile">
+                            <h4>Petrus Amutenya<span>Mining Engineering Student</span></h4>
+                        </div>
+                    </div>
+                    <div class="testimonial-item">
+                        <p>The AI identification is impressively accurate for Namibian ores specifically. You can see this was built with real local specimens, not just generic datasets — the detail is remarkable.</p>
+                        <div class="testi-footer">
+                            <img src="img/team-1.jpg" alt="profile">
+                            <h4>Maria Shipanga<span>Mineralogist, Tsumeb</span></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section><!-- /.testimonial-section -->
+
+        <section id="download" class="download-section padding">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-7">
+                        <div class="download-content">
+                            <h2>Start Identifying Ores Today</h2>
+                            <p>OreGuide is completely free. Download it now and bring expert geological knowledge to your fingertips — whether you're in the field, the lab, or the classroom.</p>
+                            <a class="download-btn" href="#"><img src="img/appstore.png" alt="Download on the App Store"></a>
+                            <a class="download-btn" href="#"><img src="img/playstore.png" alt="Get it on Google Play"></a>
+                        </div>
+                    </div>
+                    <div class="download-mockup"></div>
+                </div>
+            </div>
+        </section><!-- /.download-section -->
+
+        <section class="blog-section padding">
+            <div class="container">
+                <div class="section-heading mb-60 text-center">
+                    <h2>Latest Updates</h2>
+                    <p>News, development updates, and geological stories from the OreGuide team.</p>
+                </div>
+                <div class="row">
+                    <div class="col-lg-4 col-sm-6 sm-padding">
+                        <div class="blog-box">
+                            <div class="blog-thumb">
+                                <img src="img/blog-1.jpg" alt="OreGuide AI Model">
+                                <div class="post-meta">
+                                    <div>
+                                        <span><i class="fa fa-user"></i>By: PixelPebble Team</span>
+                                        <span><i class="fa fa-calendar"></i>Jun 01, 2026</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="blog-content">
+                                <h3><a href="#">How we trained our AI model on Namibian ore specimens</a></h3>
+                                <p>A behind-the-scenes look at the data collection and model training process that powers OreGuide's identification engine.</p>
+                                <a href="#" class="read-more">Read More</a>
+                            </div>
+                        </div>
+                    </div><!-- Post-1 -->
+                    <div class="col-lg-4 col-sm-6 sm-padding">
+                        <div class="blog-box">
+                            <div class="blog-thumb">
+                                <img src="img/blog-2.jpg" alt="Namibia Geology">
+                                <div class="post-meta">
+                                    <div>
+                                        <span><i class="fa fa-user"></i>By: PixelPebble Team</span>
+                                        <span><i class="fa fa-calendar"></i>May 15, 2026</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="blog-content">
+                                <h3><a href="#">Namibia's top 10 economically significant ore minerals</a></h3>
+                                <p>From Tsumeb's rich copper deposits to the diamonds of the Skeleton Coast — exploring Namibia's mineral wealth.</p>
+                                <a href="#" class="read-more">Read More</a>
+                            </div>
+                        </div>
+                    </div><!-- Post-2 -->
+                    <div class="col-lg-4 col-sm-6 sm-padding">
+                        <div class="blog-box">
+                            <div class="blog-thumb">
+                                <img src="img/blog-3.jpg" alt="Field Survey">
+                                <div class="post-meta">
+                                    <div>
+                                        <span><i class="fa fa-user"></i>By: PixelPebble Team</span>
+                                        <span><i class="fa fa-calendar"></i>Apr 28, 2026</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="blog-content">
+                                <h3><a href="#">Using OreGuide on a real geological field survey</a></h3>
+                                <p>We joined a UNAM field survey in the Otavi mountain range — here's how OreGuide performed in real conditions.</p>
+                                <a href="#" class="read-more">Read More</a>
+                            </div>
+                        </div>
+                    </div><!-- Post-3 -->
+                </div>
+            </div>
+        </section><!-- /.blog-section -->
+
+        <div id="subscribe" class="subscribe-section padding">
+            <div class="container text-center">
+                <div class="subscribe-content">
+                    <img class="logo" src="img/logo-light.png" alt="OreGuide">
+                    <p>Stay up to date with new ore profiles, app updates, and geological discoveries across Namibia.</p>
+                </div>
+                <div class="subscribe-wrap">
+                    <form action="#" class="subscribe-form">
+                        <input type="email" name="email" id="subs-email" class="form_input" placeholder="Enter Your Email Address...">
+                        <button type="submit" class="submit">Subscribe</button>
+                        <div class="clearfix"></div>
+                        <div id="subscribe-result">
+                            <p class="subscription-success"></p>
+                            <p class="subscription-error"></p>
+                        </div>
+                    </form>
+                </div><!-- /.subscribe_wrap -->
+                <div class="clearfix"></div>
+                <ul class="social-link">
+                    <li><a href="#"><i class="fa fa-facebook"></i></a></li>
+                    <li><a href="#"><i class="fa fa-twitter"></i></a></li>
+                    <li><a href="#"><i class="fa fa-instagram"></i></a></li>
+                    <li><a href="https://github.com/netti-e/UNAM-I3691CP-PixelPebble-OreGuide" target="_blank"><i class="fa fa-github"></i></a></li>
+                    <li><a href="#"><i class="fa fa-linkedin"></i></a></li>
+                </ul><!-- /.social_link -->
+            </div>
+        </div><!-- /.subscribe-section -->
+
+        <footer class="footer-section align-center">
+            <div class="container">
+                <p>&copy; 2026 OreGuide &mdash; University of Namibia &middot; I3691CP PixelPebble</p>
+            </div>
+        </footer><!-- /.footer-section -->
+
+        <a data-scroll href="#header" id="scroll-to-top"><i class="arrow_carrot-up"></i></a>
+
+        <!-- jQuery Lib -->
+        <script src="js/vendor/jquery-1.12.4.min.js"></script>
+        <!-- Tether JS -->
+        <script src="js/vendor/tether.min.js"></script>
+        <!-- Bootstrap JS -->
+        <script src="js/vendor/bootstrap.min.js"></script>
+        <!-- Slicknav JS -->
+        <script src="js/vendor/jquery.slicknav.min.js"></script>
+        <!-- OWL-Carousel JS -->
+        <script src="js/vendor/owl.carousel.min.js"></script>
+        <!-- Swiper JS -->
+        <script src="js/vendor/swiper.min.js"></script>
+        <!-- Smooth Scroll JS -->
+        <script src="js/vendor/smooth-scroll.min.js"></script>
+        <!-- venobox JS -->
+        <script src="js/vendor/venobox.min.js"></script>
+        <!-- Ajaxchimp JS -->
+        <script src="js/vendor/jquery.ajaxchimp.min.js"></script>
+        <!-- Wow JS -->
+        <script src="js/vendor/wow.min.js"></script>
+        <!-- Main JS -->
+        <script src="js/main.js"></script>
+
+    </body>
+</html>
