@@ -1,4 +1,5 @@
-// [STATUS: EDIT] — Fixed Quick Actions grid to use the GraduationCap icon and linked it directly to the Learn tab screen
+// app/(tabs)/index.tsx
+// [STATUS: OPERATIONAL] — Re-routed ore card components from static local modal to the dynamic Firestore stack overlay
 
 import { router } from 'expo-router';
 // Added GraduationCap explicit import here
@@ -129,7 +130,8 @@ export default function HomeScreen() {
             renderItem={({ item }) => (
               <OreCard 
                 ore={item} 
-                onPress={() => router.push({ pathname: '/modal', params: { oreID: item.oreID } })} 
+                // UPDATED: Path targets /ore-detail stack layout, supplying context matching your resolution hooks
+                onPress={() => router.push({ pathname: '/ore-detail', params: { oreID: item.oreID } })} 
               />
             )}
             ListEmptyComponent={
@@ -148,7 +150,7 @@ export default function HomeScreen() {
               {[
                 { icon: Camera, label: 'Scan Ore' },
                 { icon: MapIcon, label: 'Explore Map' },
-                { icon: GraduationCap, label: 'Learn' }, // Swapped BookOpen -> GraduationCap
+                { icon: GraduationCap, label: 'Learn' }, 
                 { icon: Bookmark, label: 'Saved Ores' },
               ].map((item, i) => (
                 <TouchableOpacity 
@@ -181,9 +183,10 @@ export default function HomeScreen() {
                     key={item.oreID} 
                     style={styles.scanCard}
                     activeOpacity={0.85}
-                    onPress={() => router.push({ pathname: '/modal', params: { oreID: item.oreID } })}
+                    // UPDATED: Connected horizontal scanner cards directly to the dynamic Firestore module
+                    onPress={() => router.push({ pathname: '/ore-detail', params: { oreID: item.oreID } })}
                   >
-                    {item.imageSamples.length > 0 ? (
+                    {item.imageSamples && item.imageSamples.length > 0 ? (
                       <Image 
                         source={{ uri: item.imageSamples[0] }} 
                         style={[styles.scanImagePlaceholder, { backgroundColor: 'transparent' }]} 
