@@ -4,10 +4,11 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Cpu, Layers, ShieldAlert, X, Heart } from 'lucide-react-native';
-import React, { useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
-import { ALL_ORES } from '../constants/ores';
 import { THEME } from '../constants/theme';
+import { fetchAllOres } from '../services/firestore';
+import { Ore } from '../types/ore';
 import { formatChemicalFormula } from '../utils/format-fomula';
 import { useFavorites } from '../hooks/use-favorites';
 import { useAuth } from '../hooks/use-auth';
@@ -17,8 +18,14 @@ export default function ModalScreen() {
   const { user } = useAuth();
   const { isFavorite, addFavorite, removeFavorite, loading } = useFavorites();
 
-  const oreData = useMemo(() => {
-    return ALL_ORES.find(item => item.oreID === oreID);
+  const [oreData, setOreData] = useState<Ore | null>(null);
+  const [fetching, setFetching] = useState(true);
+
+  useEffect(() => {
+    fetchAllOres()
+      .then(ores => setOreData(ores.find(o => o.oreID === oreID) ?? null))
+      .catch(() => setOreData(null))
+      .finally(() => setFetching(false));
   }, [oreID]);
 
   const handleFavoriteToggle = async () => {
@@ -39,6 +46,14 @@ export default function ModalScreen() {
       alert("Failed to update favorites. Please try again.");
     }
   };
+
+  if (fetching) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color={THEME.colors.primary} />
+      </View>
+    );
+  }
 
   if (!oreData) {
     return (

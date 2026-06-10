@@ -2,14 +2,12 @@
 // [STATUS: OPERATIONAL] — Fixed Group Routing Layout
 
 import { router } from 'expo-router';
-import { collection, getDocs } from 'firebase/firestore';
 import { Gem, Landmark, Layers, Pickaxe } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { EDUCATIONAL_CONTENT, LocationData } from '../../constants/ores';
 import { THEME } from '../../constants/theme';
-import { db } from '../../services/firebase';
-import { Ore } from '../../types/ore';
+import { fetchAllOres, fetchEducationalContent, fetchMineLocations } from '../../services/firestore';
+import { MineLocation, Ore } from '../../types/ore';
 import { styles } from './learn.styles';
 
 type SubSection = 'ores' | 'basics' | 'geology' | 'mining';
@@ -17,23 +15,25 @@ type SubSection = 'ores' | 'basics' | 'geology' | 'mining';
 export default function LearnScreen() {
   const [activeTab, setActiveTab] = useState<SubSection>('ores');
   const [ores, setOres] = useState<Ore[]>([]);
-  const [locations, setLocations] = useState<LocationData[]>([]);
+  const [locations, setLocations] = useState<MineLocation[]>([]);
+  const [eduContent, setEduContent] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchEducationalData() {
       try {
-        const oresSnapshot = await getDocs(collection(db, 'ores'));
-        const activeOres = oresSnapshot.docs.map(doc => ({
-          oreID: doc.id,
-          ...doc.data()
-        } as Ore));
-        
-        const locsSnapshot = await getDocs(collection(db, 'locations'));
-        const activeLocs = locsSnapshot.docs.map(doc => doc.data() as LocationData);
-
-        setOres(activeOres);
-        setLocations(activeLocs);
+        const [fetchedOres, fetchedMines, fetchedEdu] = await Promise.all([
+          fetchAllOres(),
+          fetchMineLocations(),
+          fetchEducationalContent(),
+        ]);
+        setOres(fetchedOres);
+        setLocations(fetchedMines);
+        const eduMap: Record<string, any> = {};
+        for (const section of fetchedEdu) {
+          if (section.sectionID) eduMap[section.sectionID] = section;
+        }
+        setEduContent(eduMap);
       } catch (err) {
         console.error("Error loading learn materials from Firestore:", err);
       } finally {
@@ -135,11 +135,11 @@ export default function LearnScreen() {
             </View>
           )}
 
-          {activeTab === 'basics' && (
+          {activeTab === 'basics' && eduContent.basics && (
             <View>
-              <Text style={styles.sectionTitle}>{EDUCATIONAL_CONTENT.basics.title}</Text>
-              <Text style={styles.sectionDesc}>{EDUCATIONAL_CONTENT.basics.description}</Text>
-              {EDUCATIONAL_CONTENT.basics.topics.map((topic, index) => (
+              <Text style={styles.sectionTitle}>{eduContent.basics.title}</Text>
+              <Text style={styles.sectionDesc}>{eduContent.basics.description}</Text>
+              {(eduContent.basics.topics ?? []).map((topic: any, index: number) => (
                 <View key={index} style={styles.topicCard}>
                   <Text style={styles.topicTitle}>{topic.title}</Text>
                   <Text style={styles.topicContent}>{topic.content}</Text>
@@ -148,11 +148,11 @@ export default function LearnScreen() {
             </View>
           )}
 
-          {activeTab === 'geology' && (
+          {activeTab === 'geology' && eduContent.geology && (
             <View>
-              <Text style={styles.sectionTitle}>{EDUCATIONAL_CONTENT.geology.title}</Text>
-              <Text style={styles.sectionDesc}>{EDUCATIONAL_CONTENT.geology.description}</Text>
-              {EDUCATIONAL_CONTENT.geology.topics.map((topic, index) => (
+              <Text style={styles.sectionTitle}>{eduContent.geology.title}</Text>
+              <Text style={styles.sectionDesc}>{eduContent.geology.description}</Text>
+              {(eduContent.geology.topics ?? []).map((topic: any, index: number) => (
                 <View key={index} style={styles.topicCard}>
                   <Text style={styles.topicTitle}>{topic.title}</Text>
                   <Text style={styles.topicContent}>{topic.content}</Text>
@@ -161,11 +161,11 @@ export default function LearnScreen() {
             </View>
           )}
 
-          {activeTab === 'mining' && (
+          {activeTab === 'mining' && eduContent.mining && (
             <View>
-              <Text style={styles.sectionTitle}>{EDUCATIONAL_CONTENT.mining.title}</Text>
-              <Text style={styles.sectionDesc}>{EDUCATIONAL_CONTENT.mining.description}</Text>
-              {EDUCATIONAL_CONTENT.mining.topics.map((topic, index) => (
+              <Text style={styles.sectionTitle}>{eduContent.mining.title}</Text>
+              <Text style={styles.sectionDesc}>{eduContent.mining.description}</Text>
+              {(eduContent.mining.topics ?? []).map((topic: any, index: number) => (
                 <View key={index} style={styles.topicCard}>
                   <Text style={styles.topicTitle}>{topic.title}</Text>
                   <Text style={styles.topicContent}>{topic.content}</Text>

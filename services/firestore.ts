@@ -1,7 +1,7 @@
 // services/firestore.ts
 
 import { collection, DocumentData, getDocs, limit, query } from 'firebase/firestore';
-import { Ore } from '../types/ore';
+import { Ore, MineLocation } from '../types/ore';
 import { db } from './firebase';
 
 const mapDocToOre = (id: string, data: DocumentData): Ore => {
@@ -30,6 +30,16 @@ export const fetchFeaturedOres = async (maxCount: number = 6): Promise<Ore[]> =>
   const oresCollection = collection(db, 'ores');
   const featuredQuery = query(oresCollection, limit(maxCount));
   const oreSnapshot = await getDocs(featuredQuery);
-  
+
   return oreSnapshot.docs.map(doc => mapDocToOre(doc.id, doc.data()));
+};
+
+export const fetchMineLocations = async (): Promise<MineLocation[]> => {
+  const snapshot = await getDocs(collection(db, 'mines'));
+  return snapshot.docs.map(doc => doc.data() as MineLocation);
+};
+
+export const fetchEducationalContent = async (): Promise<DocumentData[]> => {
+  const snapshot = await getDocs(collection(db, 'educationalContent'));
+  return snapshot.docs.map(doc => doc.data());
 };

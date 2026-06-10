@@ -1,19 +1,26 @@
 // app/(tabs)/map.tsx
 // [STATUS: EDIT] — Refactored to a 50/50 split-screen layout for map and mine details
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 import { useRouter } from 'expo-router';
 import { Pickaxe, ChevronRight, MapPin, Layers, Cpu } from 'lucide-react-native';
-import { THEME } from '../../constants/theme';
 import { MOCK_MINE_LOCATIONS } from '../../constants/mines';
-import { ALL_ORES } from '../../constants/ores';
-import { MineLocation } from '../../types/ore';
+import { THEME } from '../../constants/theme';
+import { fetchAllOres, fetchMineLocations } from '../../services/firestore';
+import { MineLocation, Ore } from '../../types/ore';
 
 export default function MapScreen() {
   const router = useRouter();
   const [selectedMine, setSelectedMine] = useState<MineLocation | null>(null);
+  const [mines, setMines] = useState<MineLocation[]>(MOCK_MINE_LOCATIONS);
+  const [ores, setOres] = useState<Ore[]>([]);
+
+  useEffect(() => {
+    fetchMineLocations().then(data => { if (data.length > 0) setMines(data); }).catch(() => {});
+    fetchAllOres().then(setOres).catch(() => {});
+  }, []);
 
   // Approximate center of Namibia
   const initialRegion = {
@@ -23,8 +30,8 @@ export default function MapScreen() {
     longitudeDelta: 10.0,
   };
 
-  const selectedOre = selectedMine 
-    ? ALL_ORES.find(o => o.oreID === selectedMine.oreID) 
+  const selectedOre = selectedMine
+    ? ores.find(o => o.oreID === selectedMine.oreID) ?? null
     : null;
 
   return (
@@ -47,7 +54,7 @@ export default function MapScreen() {
             maximumZ={19}
             flipY={false}
           />
-          {MOCK_MINE_LOCATIONS.map((mine) => (
+          {mines.map((mine) => (
             <Marker
               key={mine.locationID}
               coordinate={mine.coordinates}
