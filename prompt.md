@@ -89,8 +89,11 @@ File written successfully.
 
 ```text
 C:.
+│   .easignore
+│   .env
 │   .gitignore
 │   app.json
+│   eas.json
 │   eslint.config.js
 │   expo-env.d.ts
 │   package-lock.json
@@ -103,6 +106,13 @@ C:.
 │   │   devices.json
 │   │   README.md
 │   │   
+│   ├───dev
+│   │   └───logs
+│   │           start.log
+│   │           
+│   ├───static-tmp
+│   │       _error.js
+│   │       
 │   ├───types
 │   │       router.d.ts
 │   │       
@@ -119,14 +129,20 @@ C:.
 │       settings.json
 │       
 ├───app
+│   │   index.tsx
 │   │   modal.tsx
+│   │   ore-detail.tsx
 │   │   _layout.tsx
 │   │   
 │   ├───(auth)
+│   │       login+styles.ts
 │   │       login.styles.ts
 │   │       login.tsx
+│   │       register+styles.ts
 │   │       register.styles.ts
 │   │       register.tsx
+│   │       welcome+styles.ts
+│   │       welcome.tsx
 │   │       _layout.tsx
 │   │       
 │   └───(tabs)
@@ -135,6 +151,8 @@ C:.
 │           favorites.tsx
 │           index.styles.ts
 │           index.tsx
+│           learn.styles.ts
+│           learn.tsx
 │           map.tsx
 │           _layout.tsx
 │           
@@ -146,17 +164,24 @@ C:.
 │           background.jpg
 │           favicon.png
 │           icon.png
+│           intro.png
+│           intro2.png
+│           ore_guide app_icon.png
+│           ore_guide_splashscreen.png
 │           partial-react-logo.png
 │           react-logo.png
 │           react-logo@2x.png
 │           react-logo@3x.png
 │           splash-icon.png
+│           welcome.icon.png
 │           
 ├───components
 │   │   external-link.tsx
 │   │   haptic-tab.tsx
 │   │   hello-wave.tsx
+│   │   ore-card.tsx
 │   │   parallax-scroll-view.tsx
+│   │   search-bar.tsx
 │   │   themed-text.tsx
 │   │   themed-view.tsx
 │   │   
@@ -166,18 +191,31 @@ C:.
 │           icon-symbol.tsx
 │           
 ├───constants
+│       mines.ts
+│       ores.ts
 │       theme.ts
 │       
 ├───hooks
+│       use-auth.tsx
 │       use-color-scheme.ts
 │       use-color-scheme.web.ts
+│       use-favorites.ts
+│       use-ore-search.ts
 │       use-theme-color.ts
 │       
 ├───scripts
 │       reset-project.js
 │       
-└───types
-        ore.ts
+├───services
+│       firebase.ts
+│       firestore.ts
+│       
+├───types
+│       ore.ts
+│       
+└───utils
+        format-fomula.ts
+        format-formula
 
 BACKEND SCHEMAS & CONTRACTS
 1. Firebase Data Model
