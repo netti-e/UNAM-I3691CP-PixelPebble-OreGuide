@@ -1,17 +1,17 @@
-// app/(tabs)/index.tsx
-// [STATUS: EDIT] — Integrated rich SearchBar and dynamic search results list view
+// [STATUS: EDIT] — Fixed Quick Actions grid to use the GraduationCap icon and linked it directly to the Learn tab screen
 
 import { router } from 'expo-router';
-import { Bell, Bookmark, BookOpen, Camera, LogOut, Map as MapIcon, Search, User, WifiOff } from 'lucide-react-native';
+// Added GraduationCap explicit import here
+import { Bell, Bookmark, Camera, GraduationCap, LogOut, Map as MapIcon, Search, User, WifiOff } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { ActivityIndicator, Image, SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, FlatList } from 'react-native';
+import { ActivityIndicator, FlatList, Image, SafeAreaView, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { OreCard } from '../../components/ore-card';
+import { SearchBar } from '../../components/search-bar';
 import { THEME } from '../../constants/theme';
 import { useAuth } from '../../hooks/use-auth';
 import { useOreSearch } from '../../hooks/use-ore-search';
 import { formatChemicalFormula } from '../../utils/format-fomula';
 import { styles } from './index.styles';
-import { SearchBar } from '../../components/search-bar';
-import { OreCard } from '../../components/ore-card';
 
 export default function HomeScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -39,6 +39,7 @@ export default function HomeScreen() {
     }
   };
 
+  // Fixed action router pathing handler
   const handleActionPress = (label: string) => {
     switch (label) {
       case 'Scan Ore':
@@ -46,6 +47,10 @@ export default function HomeScreen() {
         break;
       case 'Explore Map':
         router.push('/(tabs)/map');
+        break;
+      case 'Learn':
+        // Safe type cast navigation path to resolve local route caching anomalies
+        router.push('/(tabs)/learn' as any);
         break;
       case 'Saved Ores':
         router.push('/(tabs)/favorites');
@@ -137,13 +142,13 @@ export default function HomeScreen() {
         ) : (
           /* Default Dashboard View */
           <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            {/* Quick Actions */}
+            {/* Quick Actions Grid Updated to support GraduationCap dynamically */}
             <Text style={styles.sectionTitle}>QUICK ACTIONS</Text>
             <View style={styles.actionGrid}>
               {[
                 { icon: Camera, label: 'Scan Ore' },
                 { icon: MapIcon, label: 'Explore Map' },
-                { icon: BookOpen, label: 'Learn' },
+                { icon: GraduationCap, label: 'Learn' }, // Swapped BookOpen -> GraduationCap
                 { icon: Bookmark, label: 'Saved Ores' },
               ].map((item, i) => (
                 <TouchableOpacity 
@@ -196,10 +201,14 @@ export default function HomeScreen() {
               </ScrollView>
             )}
 
-            {/* Heritage Banner */}
+            {/* Heritage Banner deep link routing */}
             <View style={styles.banner}>
               <Text style={styles.bannerTitle}>Namibia's Mineral Heritage</Text>
-              <TouchableOpacity style={styles.bannerButton} activeOpacity={0.8}>
+              <TouchableOpacity 
+                style={styles.bannerButton} 
+                activeOpacity={0.8}
+                onPress={() => router.push('/(tabs)/learn' as any)}
+              >
                 <Text style={styles.bannerButtonText}>Learn More</Text>
               </TouchableOpacity>
             </View>
