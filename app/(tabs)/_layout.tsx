@@ -1,73 +1,60 @@
-import { Tabs } from 'expo-router';
-import { Camera, Compass, Heart, Map, Search } from 'lucide-react-native';
+import { Redirect, Tabs } from 'expo-router';
+import { Camera, Heart, Home, Map as MapIcon } from 'lucide-react-native';
 import React from 'react';
-import { Platform } from 'react-native';
 import { THEME } from '../../constants/theme';
+import { useAuth } from '../../hooks/use-auth';
 
-export default function TabLayout() {
+export default function TabsLayout() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return null;
+  }
+
+  if (!user) {
+    return <Redirect href="/(auth)/login" />;
+  }
+
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: THEME.colors.primary,
         tabBarInactiveTintColor: THEME.colors.textMuted,
         headerShown: false,
+        // Set the background color here
         tabBarStyle: {
-          backgroundColor: THEME.colors.surface,
+          backgroundColor: '#FFFFFF',
           borderTopWidth: 1,
-          borderTopColor: THEME.colors.border,
-          height: Platform.OS === 'ios' ? 88 : 64,
-          paddingBottom: Platform.OS === 'ios' ? 30 : 10,
-          paddingTop: 10,
-        },
-        tabBarLabelStyle: {
-          ...THEME.typography.caption,
-          fontWeight: '600',
+          borderTopColor: '#E5E5E5', // Optional: adds a subtle separator
         },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Search',
-          tabBarIcon: ({ color, focused }) => (
-            <Search size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
-          ),
+          title: 'Home',
+          tabBarIcon: ({ color }) => <Home size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color, focused }) => (
-            <Compass size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="camera"
-        options={{
           title: 'Scan Ore',
-          tabBarIcon: ({ color, focused }) => (
-            <Camera size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
-          ),
+          tabBarIcon: ({ color }) => <Camera size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="map"
         options={{
-          title: 'Mine Map',
-          tabBarIcon: ({ color, focused }) => (
-            <Map size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
-          ),
+          title: 'Map',
+          tabBarIcon: ({ color }) => <MapIcon size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="favorites"
         options={{
-          title: 'Saved',
-          tabBarIcon: ({ color, focused }) => (
-            <Heart size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
-          ),
+          title: 'Favorites',
+          tabBarIcon: ({ color }) => <Heart size={24} color={color} />,
         }}
       />
     </Tabs>

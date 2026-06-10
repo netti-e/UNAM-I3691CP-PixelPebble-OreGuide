@@ -1,6 +1,9 @@
 // types/ore.ts
 // [STATUS: OPERATIONAL] — Unified application schemas and AI model contracts
 
+
+import { User } from 'firebase/auth';
+
 export interface UserProfile {
   userID: string;
   email: string;
@@ -66,4 +69,25 @@ export interface InferenceResponse {
   model_version: string;
   inference_time_ms: number;
   detections: InferenceDetection[];
+}
+
+// Global Application Authentication Context Types
+export interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  register: (credentials: RegisterCredentials) => Promise<void>;
+  logout: () => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: React.ComponentState; // Safe fallback validation for pure string input elements
+}
+
+export interface RegisterCredentials {
+  email: string;
+  password: React.ComponentState;
+  name?: string;
 }

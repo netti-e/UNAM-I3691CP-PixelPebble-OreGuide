@@ -28,8 +28,8 @@ To ensure flawless coordination across multiple AI sessions and team handoffs, y
 ### 1. Functional Requirements Status
 | Feature ID | Feature Description | Status | Completed In | Notes / Blocks | Done By |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **FR-001** | User registration | PENDING | - | - | - |
-| **FR-002** | Login / logout | PENDING | - | - | - |
+| **FR-001** | User registration | IN PROGRESS | Session 3 | Hook layer operational. Views pending. | Laina |
+| **FR-002** | Login / logout | IN PROGRESS | Session 3 | Hook layer operational. Views pending. | Laina |
 | **FR-003** | Search by name | PENDING | - | - | - |
 | **FR-004** | Search by color | PENDING | - | - | - |
 | **FR-005** | Search by chemical element | PENDING | - | - | - |
