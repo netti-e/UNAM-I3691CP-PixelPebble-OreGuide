@@ -2,6 +2,7 @@
 // [STATUS: OPERATIONAL] — Migrated to Server-Side Workflow Visualization Architecture with Deep Recursive Scanner
 
 import * as ImagePicker from 'expo-image-picker';
+import { router } from 'expo-router';
 import { Camera, ChevronRight, Image as ImageIcon, RotateCcw, Zap } from 'lucide-react-native';
 import React, { useCallback, useState } from 'react';
 import {
@@ -20,6 +21,18 @@ import type { InferenceDetection, InferenceResponse } from '../../types/ore';
 import { styles } from './explore.styles';
 
 type ScreenState = 'idle' | 'preview' | 'loading' | 'results' | 'error';
+
+// Local Geological Registry to substitute dummy model responses with valid quick stats
+const MINERAL_STATIC_REGISTRY: Record<string, { colour: string; hardness: string; common_uses: string }> = {
+  'chalcopyrite': { colour: 'Brass Yellow', hardness: '3.5 - 4.0 Mohs', common_uses: 'Primary ore source of Copper (Cu)' },
+  'azurite': { colour: 'Azure Blue', hardness: '3.5 - 4.0 Mohs', common_uses: 'Copper ore matrices, pigments, and gems' },
+  'malachite': { colour: 'Vibrant Green', hardness: '3.5 - 4.0 Mohs', common_uses: 'Copper identification pathfinder mineral' },
+  'pyrite': { colour: 'Pale Brass Yellow', hardness: '6.0 - 6.5 Mohs', common_uses: 'Sulfuric acid production and sulfur sourcing' },
+  'galena': { colour: 'Metallic Lead Grey', hardness: '2.5 - 2.8 Mohs', common_uses: 'Primary Lead (Pb) ore source containing Silver' },
+  'hematite': { colour: 'Metallic Grey / Dark Red', hardness: '5.5 - 6.5 Mohs', common_uses: 'Main industrial manufacturing source of Iron (Fe)' },
+  'magnetite': { colour: 'Metallic Iron Black', hardness: '5.5 - 6.5 Mohs', common_uses: 'Highly magnetic specialized iron ore production' },
+  'gold': { colour: 'Golden Yellow', hardness: '2.5 - 3.0 Mohs', common_uses: 'High-grade electronics, currency, and jewelry' },
+};
 
 export default function ExploreScreen() {
   const [screenState, setScreenState] = useState<ScreenState>('idle');
@@ -157,14 +170,12 @@ export default function ExploreScreen() {
       // DEEP RECURSIVE PAYLOAD SCANNERS
       // ==========================================
       
-      // 1. Air-tight recursive finder for the structured predictions array
       const extractPredictions = (data: any): any[] => {
         if (!data || typeof data !== 'object') return [];
 
         if (Array.isArray(data)) {
           if (data.length > 0 && typeof data[0] === 'object') {
             const first = data[0];
-            // Identify standard object-detection tokens returned by the core model blocks
             if ('confidence' in first || 'class' in first || 'class_id' in first || 'label' in first) {
               return data;
             }
@@ -174,7 +185,6 @@ export default function ExploreScreen() {
             if (nested.length > 0) return nested;
           }
         } else {
-          // Check common workflow output/step keys explicitly first
           const targetKeys = ['predictions', 'detections', 'objects', 'results'];
           for (const key of targetKeys) {
             if (data[key] && Array.isArray(data[key])) {
@@ -182,7 +192,6 @@ export default function ExploreScreen() {
               if (res.length > 0) return res;
             }
           }
-          // Exhaustive search through remaining parameters
           for (const key of Object.keys(data)) {
             if (data[key] && typeof data[key] === 'object') {
               const nested = extractPredictions(data[key]);
@@ -193,7 +202,6 @@ export default function ExploreScreen() {
         return [];
       };
 
-      // 2. Air-tight recursive finder for the workflow generated base64 visual frame
       const findWorkflowImage = (obj: any): any => {
         if (!obj || typeof obj !== 'object') return null;
         if (obj.output_image) return obj.output_image;
@@ -226,25 +234,35 @@ export default function ExploreScreen() {
           if (!isNaN(val)) parsedConfidence = val;
         }
 
+        const rawLabel = item.class || item.label || "Detected Ore";
+        const registryKey = rawLabel.toLowerCase().trim();
+        const registryMatch = MINERAL_STATIC_REGISTRY[registryKey];
+
+        // Intelligently clean up dummy text responses using static registry records
         return {
-          label: item.class || item.label || "Detected Ore",
+          label: rawLabel,
           confidence: parsedConfidence,
           mineral_info: {
-            colour: item.mineral_info?.colour || "See full profile details",
-            hardness: item.mineral_info?.hardness || "Available in profile",
-            common_uses: item.mineral_info?.common_uses || "Tap to view full properties",
+            colour: item.mineral_info?.colour && !item.mineral_info.colour.includes("details")
+              ? item.mineral_info.colour
+              : (registryMatch?.colour || "Analyzing chromatic signature..."),
+            hardness: item.mineral_info?.hardness && !item.mineral_info.hardness.includes("profile")
+              ? item.mineral_info.hardness
+              : (registryMatch?.hardness || "Determining scratch resistance..."),
+            common_uses: item.mineral_info?.common_uses && !item.mineral_info.common_uses.includes("Tap")
+              ? item.mineral_info.common_uses
+              : (registryMatch?.common_uses || "Calculating primary utility..."),
           }
         };
       });
 
-      // 4. Wrap up cleanly into standard layout payload
-      const finalResultObject: InferenceResponse = {
+      // 4. Wrap up cleanly into standard layout payload using intersection typing
+      const finalResultObject: InferenceResponse & { output_image?: any } = {
         detections: normalizedDetections,
         inference_time_ms: Math.round(rawData.inference_time_ms || rawData[0]?.inference_time || 0),
         model_version: "Serverless Workflow Pipeline",
+        output_image: workflowImage,
       };
-
-      (finalResultObject as any).output_image = workflowImage;
 
       setResults(finalResultObject);
       setScreenState('results');
@@ -258,7 +276,7 @@ export default function ExploreScreen() {
   const getAnnotatedImageUri = (): string | null => {
     if (!results) return null;
     
-    const rawOutput = (results as any).output_image;
+    const rawOutput = (results as InferenceResponse & { output_image?: any }).output_image;
     if (!rawOutput) return null;
 
     const base64String = typeof rawOutput === 'string' ? rawOutput : rawOutput.value;
@@ -358,7 +376,7 @@ export default function ExploreScreen() {
               </Text>
             </View>
 
-            {/* Master AI Visual Analysis Frame Generated from Serverless Workflow */}
+            {/* Master AI Visual Analysis Frame */}
             {getAnnotatedImageUri() && (
               <View style={{
                 height: 240,
@@ -402,8 +420,20 @@ function DetectionCard({ detection }: { detection: InferenceDetection }) {
       ? THEME.colors.accent
       : THEME.colors.error;
 
+  // Handles dynamic document routing to the detailed profile screen
+  const handleViewProfile = () => {
+    router.push({
+      pathname: '/ore-detail',
+      params: { oreId: detection.label }
+    });
+  };
+
   return (
-    <TouchableOpacity style={styles.detectionCard} activeOpacity={0.8}>
+    <TouchableOpacity 
+      style={styles.detectionCard} 
+      activeOpacity={0.8}
+      onPress={handleViewProfile}
+    >
       <View style={styles.detectionHeader}>
         <Text style={styles.detectionLabel}>{detection.label}</Text>
         <View style={[styles.confidenceBadge, { backgroundColor: confidenceColor }]}>

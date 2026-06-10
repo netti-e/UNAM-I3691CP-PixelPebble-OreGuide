@@ -1,6 +1,5 @@
 // app/(tabs)/learn.styles.ts
-
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform, StatusBar } from 'react-native';
 import { THEME } from '../../constants/theme';
 
 export const styles = StyleSheet.create({
@@ -10,7 +9,8 @@ export const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 24,
-    paddingTop: 16,
+    // Fixes Android status bar overlap by dynamically adding the status bar height
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 16 : 16,
     paddingBottom: 8,
   },
   headerTitle: {
@@ -26,6 +26,13 @@ export const styles = StyleSheet.create({
   tabContainer: {
     marginVertical: 12,
     height: 40,
+  },
+  // ADDED: Apply this to your horizontal ScrollView's contentContainerStyle
+  // This keeps your chips perfectly aligned with the 24px screen padding when scrolled to the start
+  tabScrollContent: {
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    gap: 8, 
   },
   tabButton: {
     flexDirection: 'row',
@@ -99,7 +106,7 @@ export const styles = StyleSheet.create({
   oreImage: {
     width: 100,
     height: '100%',
-    minHeight: 110,
+    minHeight: 115, // Bumped slightly to ensure clean image coverage on taller text wrappers
     backgroundColor: '#EAEAEA',
   },
   oreCardBody: {

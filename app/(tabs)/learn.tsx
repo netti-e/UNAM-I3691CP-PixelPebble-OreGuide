@@ -1,5 +1,7 @@
-// [STATUS: EDIT] — Reverted explicit .ts extensions to resolve TS5097 and repaired the structural bracket tree completely
+// app/(tabs)/learn.tsx
+// [STATUS: OPERATIONAL] — Fixed Group Routing Layout
 
+import { router } from 'expo-router';
 import { collection, getDocs } from 'firebase/firestore';
 import { Gem, Landmark, Layers, Pickaxe } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
@@ -22,7 +24,10 @@ export default function LearnScreen() {
     async function fetchEducationalData() {
       try {
         const oresSnapshot = await getDocs(collection(db, 'ores'));
-        const activeOres = oresSnapshot.docs.map(doc => doc.data() as Ore);
+        const activeOres = oresSnapshot.docs.map(doc => ({
+          oreID: doc.id,
+          ...doc.data()
+        } as Ore));
         
         const locsSnapshot = await getDocs(collection(db, 'locations'));
         const activeLocs = locsSnapshot.docs.map(doc => doc.data() as LocationData);
@@ -84,30 +89,49 @@ export default function LearnScreen() {
           {activeTab === 'ores' && (
             <View>
               <Text style={styles.sectionTitle}>Namibian Ores ({ores.length})</Text>
-              {ores.map((ore) => (
-                <View key={ore.oreID} style={styles.oreCard}>
-                  {ore.imageSamples && ore.imageSamples.length > 0 && (
-                    <Image source={{ uri: ore.imageSamples[0] }} style={styles.oreImage} />
-                  )}
-                  <View style={styles.oreCardBody}>
-                    <Text style={styles.oreName}>{ore.name}</Text>
-                    <Text style={styles.oreFormula}>{ore.chemicalComposition}</Text>
-                    
-                    <View style={styles.metaRow}>
-                      <Text style={styles.metaLabel}>Color: </Text>
-                      <Text style={styles.metaValue}>{ore.color}</Text>
+              {ores.map((ore) => {
+                const formula = ore.chemicalComposition || (ore as any).chemicalCompostion || 'N/A';
+
+                return (
+                  <TouchableOpacity 
+                    key={ore.oreID} 
+                    style={styles.oreCard}
+                    activeOpacity={0.9}
+                    onPress={() => {
+                      // FIXED ROUTING: Stripped the (tabs) folder group layer wrapper 
+                      router.push({
+                        pathname: '/ore-detail',
+                        params: { oreId: ore.oreID }
+                      });
+                      
+                      // NOTE: If your file uses a dynamic slug folder syntax like app/ore-detail/[oreId].tsx instead, 
+                      // use this layout setup instead:
+                      // router.push({ pathname: '/ore-detail/[oreId]', params: { oreId: ore.oreID } });
+                    }}
+                  >
+                    {ore.imageSamples && ore.imageSamples.length > 0 && (
+                      <Image source={{ uri: ore.imageSamples[0] }} style={styles.oreImage} />
+                    )}
+                    <View style={styles.oreCardBody}>
+                      <Text style={styles.oreName}>{ore.name}</Text>
+                      <Text style={styles.oreFormula}>{formula}</Text>
+                      
+                      <View style={styles.metaRow}>
+                        <Text style={styles.metaLabel}>Color: </Text>
+                        <Text style={styles.metaValue}>{ore.color}</Text>
+                      </View>
+                      <View style={styles.metaRow}>
+                        <Text style={styles.metaLabel}>Hardness: </Text>
+                        <Text style={styles.metaValue}>{ore.hardness}</Text>
+                      </View>
+                      <View style={styles.metaRow}>
+                        <Text style={styles.metaLabel}>Key Locations: </Text>
+                        <Text style={styles.metaValue} numberOfLines={2}>{getOreLocations(ore.oreID)}</Text>
+                      </View>
                     </View>
-                    <View style={styles.metaRow}>
-                      <Text style={styles.metaLabel}>Hardness: </Text>
-                      <Text style={styles.metaValue}>{ore.hardness}</Text>
-                    </View>
-                    <View style={styles.metaRow}>
-                      <Text style={styles.metaLabel}>Key Locations: </Text>
-                      <Text style={styles.metaValue} numberOfLines={2}>{getOreLocations(ore.oreID)}</Text>
-                    </View>
-                  </View>
-                </View>
-              ))}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           )}
 
