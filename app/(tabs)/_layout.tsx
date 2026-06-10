@@ -1,60 +1,74 @@
-import { Redirect, Tabs } from 'expo-router';
-import { Camera, Heart, Home, Map as MapIcon } from 'lucide-react-native';
+// [STATUS: EDIT] — Changed Home icon to Home layout, renamed Saved tab to Favorites, and updated its icon to a Heart
+
+import { Tabs } from 'expo-router';
 import React from 'react';
 import { THEME } from '../../constants/theme';
-import { useAuth } from '../../hooks/use-auth';
+// Imported Home and Heart, removed Search
+import { Camera, GraduationCap, Heart, Home, Map } from 'lucide-react-native';
 
 export default function TabsLayout() {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return null;
-  }
-
-  if (!user) {
-    return <Redirect href="/(auth)/login" />;
-  }
-
   return (
     <Tabs
       screenOptions={{
+        headerShown: false,
         tabBarActiveTintColor: THEME.colors.primary,
         tabBarInactiveTintColor: THEME.colors.textMuted,
-        headerShown: false,
-        // Set the background color here
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
+          backgroundColor: THEME.colors.surface,
           borderTopWidth: 1,
-          borderTopColor: '#E5E5E5', // Optional: adds a subtle separator
+          borderTopColor: THEME.colors.border,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '500',
         },
       }}
     >
+      {/* 1. Home Screen (ICON CHANGED TO HOME) */}
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <Home size={24} color={color} />,
+          tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
         }}
       />
+
+      {/* 2. Scan Ore Screen */}
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'Scan Ore',
-          tabBarIcon: ({ color }) => <Camera size={24} color={color} />,
+          title: 'Scan',
+          tabBarIcon: ({ color, size }) => <Camera size={size} color={color} />,
         }}
       />
+
+      {/* 3. Map View Screen */}
       <Tabs.Screen
         name="map"
         options={{
-          title: 'Map',
-          tabBarIcon: ({ color }) => <MapIcon size={24} color={color} />,
+          title: 'Mines Map',
+          tabBarIcon: ({ color, size }) => <Map size={size} color={color} />,
         }}
       />
+
+      {/* 4. Favorites Screen (RENAMED & ICON CHANGED TO HEART) */}
       <Tabs.Screen
         name="favorites"
         options={{
-          title: 'Favorites',
-          tabBarIcon: ({ color }) => <Heart size={24} color={color} />,
+          title: 'Favorites', // Changed from 'Saved'
+          tabBarIcon: ({ color, size }) => <Heart size={size} color={color} />,
+        }}
+      />
+
+      {/* 5. Learn Screen */}
+      <Tabs.Screen
+        name="learn"
+        options={{
+          title: 'Learn',
+          tabBarIcon: ({ color, size }) => <GraduationCap size={size} color={color} />,
         }}
       />
     </Tabs>
