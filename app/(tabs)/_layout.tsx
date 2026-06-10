@@ -1,10 +1,53 @@
-// [STATUS: EDIT] — Changed Home icon to Home layout, renamed Saved tab to Favorites, and updated its icon to a Heart
-
 import { Tabs } from 'expo-router';
-import React from 'react';
+import LottieView from 'lottie-react-native';
+import { Camera, GraduationCap, Heart, Map } from 'lucide-react-native';
+import React, { useEffect, useRef } from 'react';
 import { THEME } from '../../constants/theme';
-// Imported Home and Heart, removed Search
-import { Camera, GraduationCap, Heart, Home, Map } from 'lucide-react-native';
+
+const AnimatedHomeIcon = ({ focused, color, size }: { focused: boolean; color: string; size: number }) => {
+  const animationRef = useRef<LottieView>(null);
+  
+  // FIX: Use ReturnType to get the correct type regardless of environment
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (focused) {
+      // Play immediately on focus
+      animationRef.current?.play();
+
+      // Clear any existing interval before starting a new one
+      if (intervalRef.current) clearInterval(intervalRef.current);
+
+      // Set the interval
+      intervalRef.current = setInterval(() => {
+        animationRef.current?.play();
+      }, 4000);
+    } else {
+      // Clear interval and reset animation when tab is not focused
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      animationRef.current?.reset();
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [focused]);
+
+  return (
+    <LottieView
+      ref={animationRef}
+      source={require('@/assets/animations/home-icon.json')}
+      style={{ width: size + 15, height: size + 15 }}
+      autoPlay={false}
+      loop={false}
+      colorFilters={[{ keypath: '*', color: color }]} 
+    />
+  );
+};
 
 export default function TabsLayout() {
   return (
@@ -21,22 +64,16 @@ export default function TabsLayout() {
           paddingBottom: 8,
           paddingTop: 8,
         },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '500',
-        },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '500' },
       }}
     >
-      {/* 1. Home Screen (ICON CHANGED TO HOME) */}
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
+          tabBarIcon: (props) => <AnimatedHomeIcon {...props} />,
         }}
       />
-
-      {/* 2. Scan Ore Screen */}
       <Tabs.Screen
         name="explore"
         options={{
@@ -44,8 +81,6 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => <Camera size={size} color={color} />,
         }}
       />
-
-      {/* 3. Map View Screen */}
       <Tabs.Screen
         name="map"
         options={{
@@ -53,17 +88,13 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => <Map size={size} color={color} />,
         }}
       />
-
-      {/* 4. Favorites Screen (RENAMED & ICON CHANGED TO HEART) */}
       <Tabs.Screen
         name="favorites"
         options={{
-          title: 'Favorites', // Changed from 'Saved'
+          title: 'Favorites',
           tabBarIcon: ({ color, size }) => <Heart size={size} color={color} />,
         }}
       />
-
-      {/* 5. Learn Screen */}
       <Tabs.Screen
         name="learn"
         options={{

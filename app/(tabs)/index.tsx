@@ -2,9 +2,9 @@
 // [STATUS: OPERATIONAL] — Re-routed ore card components from static local modal to the dynamic Firestore stack overlay
 
 import { router } from 'expo-router';
-// Added GraduationCap explicit import here
-import { Bell, Bookmark, Camera, GraduationCap, LogOut, Map as MapIcon, Search, User, WifiOff } from 'lucide-react-native';
-import React, { useState } from 'react';
+import LottieView from 'lottie-react-native';
+import { Bell, Bookmark, Camera, GraduationCap, LogOut, Map as MapIcon, Search, WifiOff } from 'lucide-react-native';
+import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, SafeAreaView, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { OreCard } from '../../components/ore-card';
 import { SearchBar } from '../../components/search-bar';
@@ -16,7 +16,17 @@ import { styles } from './index.styles';
 
 export default function HomeScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const profileAnimation = useRef<LottieView>(null);
   const { logout, user } = useAuth();
+  
+  // Interval to play animation every 2 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      profileAnimation.current?.play();
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
   const {
     ores,
     loading,
@@ -40,24 +50,13 @@ export default function HomeScreen() {
     }
   };
 
-  // Fixed action router pathing handler
   const handleActionPress = (label: string) => {
     switch (label) {
-      case 'Scan Ore':
-        router.push('/(tabs)/explore');
-        break;
-      case 'Explore Map':
-        router.push('/(tabs)/map');
-        break;
-      case 'Learn':
-        // Safe type cast navigation path to resolve local route caching anomalies
-        router.push('/(tabs)/learn' as any);
-        break;
-      case 'Saved Ores':
-        router.push('/(tabs)/favorites');
-        break;
-      default:
-        break;
+      case 'Scan Ore': router.push('/(tabs)/explore'); break;
+      case 'Explore Map': router.push('/(tabs)/map'); break;
+      case 'Learn': router.push('/(tabs)/learn' as any); break;
+      case 'Saved Ores': router.push('/(tabs)/favorites'); break;
+      default: break;
     }
   };
 
@@ -65,7 +64,6 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Network Alert Flag */}
       {isOfflineFallback && (
         <View style={{ backgroundColor: '#F59E0B', paddingVertical: 6, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 }}>
           <WifiOff size={14} color="#FFF" />
@@ -73,13 +71,28 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Top Header */}
+     {/* Top Header */}
       <View style={styles.headerRow}>
         <Text style={styles.title}>OreGuide</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
           <Bell size={22} color={THEME.colors.text} />
-          <TouchableOpacity style={styles.profileButton} onPress={() => setMenuOpen(!menuOpen)}>
-            <User size={22} color={THEME.colors.text} />
+          
+          <TouchableOpacity 
+            style={styles.profileButton} 
+            onPress={() => {
+              setMenuOpen(!menuOpen);
+              // Only plays when the user actually taps the button
+              profileAnimation.current?.play();
+            }}
+          >
+            <LottieView
+              ref={profileAnimation}
+              source={require('@/assets/animations/profile-icon.json')}
+              style={{ width: 36, height: 36 }}
+              autoPlay={false} // Disabled automatic playback
+              loop={false}
+              // Keeping your colors as they are in the original file
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -122,7 +135,6 @@ export default function HomeScreen() {
         </View>
 
         {isSearching ? (
-          /* Dynamic Search Results View */
           <FlatList 
             data={ores}
             keyExtractor={(item) => item.oreID}
@@ -130,7 +142,6 @@ export default function HomeScreen() {
             renderItem={({ item }) => (
               <OreCard 
                 ore={item} 
-                // UPDATED: Path targets /ore-detail stack layout, supplying context matching your resolution hooks
                 onPress={() => router.push({ pathname: '/ore-detail', params: { oreID: item.oreID } })} 
               />
             )}
@@ -142,9 +153,7 @@ export default function HomeScreen() {
             }
           />
         ) : (
-          /* Default Dashboard View */
           <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            {/* Quick Actions Grid Updated to support GraduationCap dynamically */}
             <Text style={styles.sectionTitle}>QUICK ACTIONS</Text>
             <View style={styles.actionGrid}>
               {[
@@ -165,9 +174,7 @@ export default function HomeScreen() {
               ))}
             </View>
 
-            {/* Dynamic Recent Scans */}
             <Text style={styles.sectionTitle}>RECENT MINERALS & SCANS</Text>
-            
             {loading ? (
               <View style={{ height: 140, justifyContent: 'center', alignItems: 'center' }}>
                 <ActivityIndicator size="small" color={THEME.colors.primary} />
@@ -183,7 +190,6 @@ export default function HomeScreen() {
                     key={item.oreID} 
                     style={styles.scanCard}
                     activeOpacity={0.85}
-                    // UPDATED: Connected horizontal scanner cards directly to the dynamic Firestore module
                     onPress={() => router.push({ pathname: '/ore-detail', params: { oreID: item.oreID } })}
                   >
                     {item.imageSamples && item.imageSamples.length > 0 ? (
@@ -204,7 +210,6 @@ export default function HomeScreen() {
               </ScrollView>
             )}
 
-            {/* Heritage Banner deep link routing */}
             <View style={styles.banner}>
               <Text style={styles.bannerTitle}>Namibia's Mineral Heritage</Text>
               <TouchableOpacity 

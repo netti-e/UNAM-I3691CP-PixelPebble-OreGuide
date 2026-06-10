@@ -1,9 +1,10 @@
-import NetInfo from '@react-native-community/netinfo'; // Added import
+import NetInfo from '@react-native-community/netinfo';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import LottieView from 'lottie-react-native'; // Added import
+import { useEffect, useRef, useState } from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import 'react-native-gesture-handler';
 import 'react-native-reanimated';
@@ -28,7 +29,8 @@ function RootLayoutContent() {
   const colorScheme = useColorScheme();
   const { loading: authLoading } = useAuth();
   const [showOverlay, setShowOverlay] = useState(true);
-  const [networkSpeed, setNetworkSpeed] = useState(1); // Added state
+  const [networkSpeed, setNetworkSpeed] = useState(1);
+  const animationRef = useRef<LottieView>(null);
 
   // Animation Values
   const oreTranslateX = useSharedValue(SCREEN_WIDTH);
@@ -36,12 +38,10 @@ function RootLayoutContent() {
   const iconTranslateY = useSharedValue(-SCREEN_HEIGHT);
   const iconTranslateX = useSharedValue(130);
   const iconRotation = useSharedValue(0);
-  const loadingBarWidth = useSharedValue(0);
   const iconShake = useSharedValue(0);
   const iconScale = useSharedValue(1);
 
   useEffect(() => {
-    // Detect network speed
     const unsubscribe = NetInfo.addEventListener(state => {
       setNetworkSpeed(state.type === 'wifi' ? 1 : 0.5);
     });
@@ -55,15 +55,14 @@ function RootLayoutContent() {
       setTimeout(() => {
         iconTranslateY.value = withTiming(-85, { duration: 600, easing: Easing.out(Easing.quad) });
         setTimeout(() => {
-          iconTranslateX.value = withTiming(-90, { duration: 1500, easing: Easing.linear });
+          iconTranslateX.value = withTiming(-80, { duration: 1500, easing: Easing.linear });
           iconRotation.value = withTiming(-360, { duration: 1500, easing: Easing.linear });
           
           iconTranslateY.value = withRepeat(
             withSequence(
               withTiming(-105, { duration: 350, easing: Easing.out(Easing.quad) }),
               withTiming(-85, { duration: 350, easing: Easing.in(Easing.quad) })
-            ),
-            2, false
+            ), 2, false
           );
 
           setTimeout(() => {
@@ -71,24 +70,21 @@ function RootLayoutContent() {
             iconTranslateX.value = withTiming(-110, { duration: 400, easing: Easing.out(Easing.quad) });
 
             setTimeout(() => {
-              // ONLY CHANGE: Duration is now divided by networkSpeed
-              const duration = 5000 / networkSpeed;
-              loadingBarWidth.value = withTiming(240, { duration, easing: Easing.linear }, (finished) => {
-                if (finished) {
-                  iconShake.value = withRepeat(
-                    withSequence(
-                      withTiming(10, { duration: 100 }),
-                      withTiming(-10, { duration: 100 }),
-                      withTiming(0, { duration: 100 })
-                    ),
-                    3, false, () => {
-                      iconScale.value = withTiming(20, { duration: 800, easing: Easing.in(Easing.exp) }, () => {
-                        runOnJS(setShowOverlay)(false);
-                      });
-                    }
-                  );
-                }
-              });
+              animationRef.current?.play();
+              // Lottie total duration is 10s at 1x speed. Adjusted by networkSpeed.
+              setTimeout(() => {
+                iconShake.value = withRepeat(
+                  withSequence(
+                    withTiming(10, { duration: 100 }),
+                    withTiming(-10, { duration: 100 }),
+                    withTiming(0, { duration: 100 })
+                  ), 3, false, () => {
+                    iconScale.value = withTiming(20, { duration: 800, easing: Easing.in(Easing.exp) }, () => {
+                      runOnJS(setShowOverlay)(false);
+                    });
+                  }
+                );
+              }, 10000 / networkSpeed);
             }, 600);
           }, 1400);
         }, 600);
@@ -97,7 +93,6 @@ function RootLayoutContent() {
     return () => unsubscribe();
   }, [authLoading, networkSpeed]);
 
-  // Styles remain identical to your original code
   const oreStyle = useAnimatedStyle(() => ({ transform: [{ translateX: oreTranslateX.value }] }));
   const guideStyle = useAnimatedStyle(() => ({ transform: [{ translateX: guideTranslateX.value }] }));
   const iconStyle = useAnimatedStyle(() => ({
@@ -108,8 +103,7 @@ function RootLayoutContent() {
       { scale: iconScale.value }
     ],
   }));
-  const loadingStyle = useAnimatedStyle(() => ({ width: loadingBarWidth.value }));
-
+  
   return (
     <View style={styles.container}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -130,9 +124,31 @@ function RootLayoutContent() {
               <Animated.View style={guideStyle}><Text style={styles.brandTextBlack}>GUIDE</Text></Animated.View>
             </View>
             
-            <View style={styles.loadingContainer}>
-              <Animated.View style={[styles.loadingBar, loadingStyle]} />
-            </View>
+            {/* Replaced loadingBar with LottieView */}
+            <LottieView
+  ref={animationRef}
+  source={require('@/assets/animations/loading-bar.json')}
+  style={styles.lottieLoading}
+  speed={networkSpeed}
+  loop={false}
+  renderMode="HARDWARE"
+  colorFilters={[
+    // Make the text white
+    {
+      keypath: 'Loading...', 
+      color: 'white',
+    },
+    // Make the bar and moving dot elements white
+    {
+      keypath: 'Layer 5 Outlines 4',
+      color: 'white',
+    },
+    {
+      keypath: 'Dot',
+      color: 'white',
+    }
+  ]}
+/>
 
             <Animated.View style={[styles.iconBorder, iconStyle]}>
               <Animated.Image
@@ -156,11 +172,10 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   overlayCanvas: { ...StyleSheet.absoluteFillObject, backgroundColor: '#E97A34', zIndex: 100 },
   animationCenteringContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  textRow: { flexDirection: 'row', justifyContent: 'center', width: 240, marginLeft: 45, },
-  loadingContainer: { width: 240, alignItems: 'flex-start' },
+  textRow: { flexDirection: 'row', justifyContent: 'center', width: 240, marginLeft: 45, marginTop: 85,},
+  lottieLoading: { width: 320, height: 150,marginLeft: 30, marginTop: -50}, // Adjusted for Lottie size
   brandTextWhite: { fontSize: 32, fontWeight: '900', color: '#FFFFFF', letterSpacing: 4 },
   brandTextBlack: { fontSize: 32, fontWeight: '900', color: '#000000', letterSpacing: 4 },
-  loadingBar: { height: 4, backgroundColor: '#FFFFFF', marginTop: 8 },
   iconBorder: {
     position: 'absolute',
     width: 100, height: 100, borderRadius: 50,
