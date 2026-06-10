@@ -66,6 +66,11 @@ export const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
     borderRadius: THEME.borderRadius.sm,
     marginRight: THEME.spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: THEME.colors.primary,
   },
   rememberMeText: {
     ...THEME.typography.body,

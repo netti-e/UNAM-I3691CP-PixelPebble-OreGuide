@@ -63,10 +63,16 @@ export default function RegisterScreen() {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <View style={styles.container}>
+      <Image
+        source={require('../../assets/images/background.jpg')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <ChevronLeft size={24} color={THEME.colors.text} />
@@ -147,12 +153,7 @@ export default function RegisterScreen() {
           </TouchableOpacity>
         </View>
       </View>
-
-      <Image 
-        source={require('../../assets/images/background.jpg')} 
-        style={styles.backgroundImage}
-        resizeMode="cover"
-      />
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }

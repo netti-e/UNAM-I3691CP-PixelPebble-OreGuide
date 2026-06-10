@@ -1,12 +1,16 @@
 // app/(auth)/login.tsx
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Link, router } from 'expo-router';
-import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
+// @ts-ignore
+import { getReactNativePersistence, inMemoryPersistence, setPersistence } from 'firebase/auth';
+import { Check, Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { THEME } from '../../constants/theme';
 import { useAuth } from '../../hooks/use-auth';
+import { auth } from '../../services/firebase';
 import { styles } from './login.styles';
 
 const GoogleIcon = ({ size = 20 }: { size?: number }) => (
@@ -36,6 +40,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [secureText, setSecureText] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleLogin = async () => {
     if (!email.trim() || !password) {
@@ -45,6 +50,7 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
+      await setPersistence(auth, rememberMe ? getReactNativePersistence(AsyncStorage) : inMemoryPersistence);
       await login({ email: email.trim(), password });
       router.replace('/(tabs)');
     } catch (error: any) {
@@ -94,10 +100,16 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <View style={styles.container}>
+      <Image
+        source={require('../../assets/images/background.jpg')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
       <View style={styles.content}>
         <Text style={styles.title}>LOGIN</Text>
         
@@ -145,10 +157,16 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.optionsContainer}>
-            <View style={styles.rememberMeContainer}>
-              <View style={styles.checkbox} />
+            <TouchableOpacity
+              style={styles.rememberMeContainer}
+              onPress={() => setRememberMe(!rememberMe)}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+                {rememberMe && <Check size={14} color="#FFFFFF" />}
+              </View>
               <Text style={styles.rememberMeText}>Remember me</Text>
-            </View>
+            </TouchableOpacity>
             <TouchableOpacity>
               <Text style={styles.linkText}>Forgot password?</Text>
             </TouchableOpacity>
@@ -208,12 +226,7 @@ export default function LoginScreen() {
           )}
         </TouchableOpacity>
       </View>
-
-      <Image 
-        source={require('../../assets/images/background.jpg')} 
-        style={styles.backgroundImage}
-        resizeMode="cover"
-      />
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
