@@ -36,10 +36,11 @@
         {
           "image": "./assets/images/intro.png",
           "resizeMode": "cover",
+          "imageWidth": 370,
           "backgroundColor": "#000000",
           "dark": {
           "backgroundColor": "#000000",
-          "imageWidth": 400
+          
           }
         }
       ],
