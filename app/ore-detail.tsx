@@ -5,7 +5,7 @@
 import { useLocalSearchParams, router, Stack } from 'expo-router';
 // Added collection, query, where, and getDocs to handle fallback lookup matrices
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import { ArrowLeft, Beaker, Shield, Compass, Image as ImageIcon } from 'lucide-react-native';
+import { ArrowLeft, Beaker, Shield, Compass, Image as ImageIcon, Search } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -14,6 +14,7 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
+  Linking,
   SafeAreaView,
   Platform,
   StatusBar
@@ -159,6 +160,15 @@ export default function OreDetailScreen() {
             </View>
             <Text style={[styles.sectionParagraph, { color: c.text }]}>{ore.uses}</Text>
           </View>
+
+          <TouchableOpacity
+            style={[styles.googleButton, { borderColor: c.border, backgroundColor: c.surface }]}
+            onPress={() => Linking.openURL(`https://www.google.com/search?q=${encodeURIComponent(ore.name + ' mineral')}`)}
+            activeOpacity={0.7}
+          >
+            <Search size={16} color={c.primary} />
+            <Text style={[styles.googleButtonText, { color: c.primary }]}>Search "{ore.name}" on Google</Text>
+          </TouchableOpacity>
 
           {ore.imageSamples && ore.imageSamples.length > 0 && (
             <View style={styles.section}>
@@ -330,6 +340,20 @@ const styles = StyleSheet.create({
   },
   backBtnText: {
     color: '#FFF',
+    fontWeight: '600',
+  },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  googleButtonText: {
+    fontSize: 14,
     fontWeight: '600',
   },
 });
