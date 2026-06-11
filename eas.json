@@ -29,6 +29,7 @@
        "EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET": "oreguide-95c75.firebasestorage.app",
        "EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "531617786979",
        "EXPO_PUBLIC_FIREBASE_APP_ID": "1:531617786979:web:f0735e7574f217cf2f1c56",
+      "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID":"531617786979-5mvj66jpseg8mg4m4pb43vdkvhmna523.apps.googleusercontent.com",
       } 
     },
     "production": {}
