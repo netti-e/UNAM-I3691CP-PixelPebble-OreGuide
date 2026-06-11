@@ -1,8 +1,8 @@
-// [STATUS: NEW | Guard auth screens and redirect signed-in users]
+// [STATUS: EDIT — Restored layout route parameters and cleared extraneous UI snippets]
 // app/(auth)/_layout.tsx
-import { Redirect, Stack, useSegments } from 'expo-router';
 
 import { useAuth } from '@/hooks/use-auth';
+import { Redirect, Stack, useSegments } from 'expo-router';
 
 export default function AuthLayout() {
   const { user, loading } = useAuth();
