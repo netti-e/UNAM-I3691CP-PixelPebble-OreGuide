@@ -6,17 +6,29 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: THEME.colors.surface,
   },
+  header: {
+    paddingTop: 60,
+    paddingHorizontal: THEME.spacing.lg,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: THEME.colors.text,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   content: {
     flex: 1,
     paddingHorizontal: THEME.spacing.xl,
-    paddingTop: 120,
+    paddingTop: 40,
     zIndex: 1,
   },
   title: {
     ...THEME.typography.h1,
     color: THEME.colors.text,
     marginBottom: THEME.spacing.sm,
-    textTransform: 'uppercase',
     fontWeight: '900',
   },
   subtitleContainer: {
@@ -24,11 +36,11 @@ export const styles = StyleSheet.create({
     marginBottom: THEME.spacing.xl,
   },
   subtitleText: {
-    ...THEME.typography.body,
+    ...THEME.typography.caption,
     color: THEME.colors.textMuted,
   },
   linkText: {
-    ...THEME.typography.body,
+    ...THEME.typography.caption,
     color: THEME.colors.primary,
     fontWeight: '600',
   },
@@ -43,36 +55,8 @@ export const styles = StyleSheet.create({
     paddingHorizontal: THEME.spacing.md,
     height: 56,
   },
-  icon: {
-    marginRight: THEME.spacing.sm,
-  },
   input: {
     flex: 1,
-    ...THEME.typography.body,
-    color: THEME.colors.text,
-  },
-  optionsContainer: {
-    flexDirection: 'column',
-    gap: THEME.spacing.md,
-    marginTop: THEME.spacing.sm,
-  },
-  rememberMeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    backgroundColor: '#E0E0E0',
-    borderRadius: THEME.borderRadius.sm,
-    marginRight: THEME.spacing.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxChecked: {
-    backgroundColor: THEME.colors.primary,
-  },
-  rememberMeText: {
     ...THEME.typography.body,
     color: THEME.colors.text,
   },

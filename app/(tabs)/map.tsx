@@ -1,31 +1,138 @@
 // app/(tabs)/map.tsx
-// [STATUS: EDIT] — Refactored to a 50/50 split-screen layout for map and mine details
-
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
-import MapView, { Marker, UrlTile } from 'react-native-maps';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  StyleSheet, View, Text, Image, TouchableOpacity,
+  Dimensions, Platform, StatusBar,
+} from 'react-native';
+import WebView, { WebViewMessageEvent } from 'react-native-webview';
 import { useRouter } from 'expo-router';
-import { Pickaxe, ChevronRight, MapPin, Layers, Cpu } from 'lucide-react-native';
+import { X, MapPin, Droplets, Shield, ArrowRight, Mountain } from 'lucide-react-native';
 import { AppLoader } from '../../components/app-loader';
 import { MOCK_MINE_LOCATIONS } from '../../constants/mines';
 import { useAppTheme } from '../../contexts/theme-context';
 import { fetchAllOres, fetchMineLocations } from '../../services/firestore';
 import { MineLocation, Ore } from '../../types/ore';
 
+const { height: SCREEN_H } = Dimensions.get('window');
+const STATUS_H = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0;
+const GEOAPIFY_KEY = process.env.EXPO_PUBLIC_GEOAPIFY_API_KEY ?? '';
+
+function buildMapHTML(apiKey: string): string {
+  const hasKey = apiKey.length > 0 && apiKey !== 'YOUR_GEOAPIFY_KEY_HERE';
+  const tileUrl = hasKey
+    ? `https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=${apiKey}`
+    : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #map { width: 100%; height: 100%; background: #f0ede8; }
+    .leaflet-control-zoom { border: none !important; box-shadow: 0 2px 12px rgba(0,0,0,0.15) !important; border-radius: 12px !important; overflow: hidden; }
+    .leaflet-control-zoom a { background: #fff !important; color: #333 !important; border: none !important; font-size: 16px !important; line-height: 30px !important; width: 36px !important; height: 36px !important; }
+    .leaflet-control-zoom a:hover { background: #f5f5f5 !important; }
+    @keyframes pulse {
+      0%   { transform: scale(1);   opacity: 0.6; }
+      70%  { transform: scale(2.2); opacity: 0; }
+      100% { transform: scale(1);   opacity: 0; }
+    }
+    .pin-pulse {
+      position: absolute;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(30, 127, 216, 0.4);
+      top: 4px; left: 4px;
+      animation: pulse 1.6s ease-out infinite;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    var map = L.map('map', {
+      zoomControl: false,
+      attributionControl: false,
+      maxZoom: 19
+    }).setView([-22.0, 18.0], 5);
+
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    L.tileLayer('${tileUrl}', {
+      maxZoom: 19,
+      subdomains: ['a','b','c']
+    }).addTo(map);
+
+    var markers = {};
+    var selectedId = null;
+
+    function buildIcon(locationID) {
+      var isSelected = locationID === selectedId;
+      var fill = isSelected ? '#1E7FD8' : '#D35400';
+      var ring = isSelected ? '<div class="pin-pulse"></div>' : '';
+      var html =
+        '<div style="position:relative;width:36px;height:46px;">' +
+          ring +
+          '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="46" viewBox="0 0 36 46" style="filter:drop-shadow(0 3px 5px rgba(0,0,0,0.30))">' +
+            '<ellipse cx="18" cy="43" rx="7" ry="3" fill="rgba(0,0,0,0.18)"/>' +
+            '<path d="M18 2 C9.2 2 2 9.2 2 18 C2 29.5 18 44 18 44 C18 44 34 29.5 34 18 C34 9.2 26.8 2 18 2Z" fill="' + fill + '" stroke="#fff" stroke-width="2.5"/>' +
+            '<circle cx="18" cy="18" r="7" fill="rgba(255,255,255,0.95)"/>' +
+            '<circle cx="18" cy="18" r="3.5" fill="' + fill + '"/>' +
+          '</svg>' +
+        '</div>';
+      return L.divIcon({
+        html: html,
+        iconSize: [36, 46],
+        iconAnchor: [18, 46],
+        className: ''
+      });
+    }
+
+    function initMap(mines) {
+      Object.values(markers).forEach(function(m) { m.remove(); });
+      markers = {};
+      mines.forEach(function(mine) {
+        if (!mine.coordinates || mine.coordinates.latitude == null) return;
+        var latlng = [mine.coordinates.latitude, mine.coordinates.longitude];
+        var marker = L.marker(latlng, { icon: buildIcon(mine.locationID) }).addTo(map);
+        marker.on('click', function(e) {
+          L.DomEvent.stopPropagation(e);
+          selectedId = mine.locationID;
+          Object.keys(markers).forEach(function(id) {
+            markers[id].setIcon(buildIcon(id));
+          });
+          window.ReactNativeWebView.postMessage(JSON.stringify({ locationID: mine.locationID }));
+        });
+        markers[mine.locationID] = marker;
+      });
+    }
+
+    map.on('click', function() {
+      selectedId = null;
+      Object.keys(markers).forEach(function(id) {
+        markers[id].setIcon(buildIcon(id));
+      });
+      window.ReactNativeWebView.postMessage(JSON.stringify({ locationID: null }));
+    });
+  </script>
+</body>
+</html>`;
+}
+
 export default function MapScreen() {
   const router = useRouter();
   const { theme } = useAppTheme();
-  const THEME = theme;
+  const c = theme.colors;
+  const webviewRef = useRef<WebView>(null);
   const [selectedMine, setSelectedMine] = useState<MineLocation | null>(null);
   const [mines, setMines] = useState<MineLocation[]>(MOCK_MINE_LOCATIONS);
   const [ores, setOres] = useState<Ore[]>([]);
   const [oresLoading, setOresLoading] = useState(true);
-  const [mapRegion, setMapRegion] = useState({
-    latitude: -22.0,
-    longitude: 18.0,
-    latitudeDelta: 22.0,
-    longitudeDelta: 18.0,
-  });
+  const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
     fetchMineLocations().then(data => { if (data.length > 0) setMines(data); }).catch(() => {});
@@ -39,107 +146,122 @@ export default function MapScreen() {
     ? ores.find(o => o.oreID === selectedMine.oreID) ?? null
     : null;
 
+  const handleMapLoad = () => {
+    setMapReady(true);
+    webviewRef.current?.injectJavaScript(`initMap(${JSON.stringify(mines)}); true;`);
+  };
+
+  const handleMessage = (event: WebViewMessageEvent) => {
+    try {
+      const { locationID } = JSON.parse(event.nativeEvent.data) as { locationID: string | null };
+      setSelectedMine(locationID == null ? null : (mines.find(m => m.locationID === locationID) ?? null));
+    } catch {}
+  };
+
+  useEffect(() => {
+    if (mapReady) {
+      webviewRef.current?.injectJavaScript(`initMap(${JSON.stringify(mines)}); true;`);
+    }
+  }, [mines]);
+
+  const heroImage = selectedOre?.imageSamples?.[0] ?? null;
+
   return (
-    <View style={[styles.container, { backgroundColor: THEME.colors.background }]}>
-      {/* Map Section */}
-      <View style={selectedMine ? styles.mapHalf : styles.mapFull}>
-        <MapView
-          style={StyleSheet.absoluteFillObject}
-          region={mapRegion}
-          onRegionChangeComplete={setMapRegion}
-          mapType="none"
-          onPress={(e) => {
-            if (e.nativeEvent.action !== 'marker-press') {
-              setSelectedMine(null);
-            }
-          }}
-        >
-          <UrlTile
-            urlTemplate="https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
-            maximumZ={19}
-            flipY={false}
-          />
-          {mines.map((mine) => (
-            <Marker
-              key={mine.locationID}
-              coordinate={mine.coordinates}
-              onPress={() => setSelectedMine(mine)}
-            >
-              <View style={styles.markerContainer}>
-                <View style={[
-                  styles.markerBubble, 
-                  selectedMine?.locationID === mine.locationID && { backgroundColor: THEME.colors.secondary }
-                ]}>
-                  <Pickaxe color={THEME.colors.surface} size={16} />
-                </View>
-                <View style={[
-                  styles.markerTail,
-                  selectedMine?.locationID === mine.locationID && { borderTopColor: THEME.colors.secondary }
-                ]} />
-              </View>
-            </Marker>
-          ))}
-        </MapView>
-      </View>
+    <View style={styles.root}>
+      {/* Full-screen map */}
+      <WebView
+        ref={webviewRef}
+        style={StyleSheet.absoluteFillObject}
+        originWhitelist={['*']}
+        source={{ html: buildMapHTML(GEOAPIFY_KEY) }}
+        onLoadEnd={handleMapLoad}
+        onMessage={handleMessage}
+        javaScriptEnabled
+        domStorageEnabled
+        scrollEnabled={false}
+        overScrollMode="never"
+        bounces={false}
+      />
 
+      {/* Floating mine count badge */}
+      {!selectedMine && (
+        <View style={[styles.badge, { backgroundColor: c.surface }]}>
+          <Mountain size={13} color={c.primary} />
+          <Text style={[styles.badgeText, { color: c.text }]}>{mines.length} mines</Text>
+        </View>
+      )}
+
+      {/* Bottom-sheet detail panel */}
       {selectedMine && (
-        <View style={[styles.detailsHalf, { backgroundColor: THEME.colors.surface }]}>
-          <ScrollView contentContainerStyle={styles.detailsScroll}>
-            <View style={styles.detailsHeader}>
-              <View>
-                <Text style={[styles.mineName, { color: THEME.colors.text }]}>{selectedMine.mineName}</Text>
-                <View style={styles.accessRow}>
-                  <MapPin size={14} color={THEME.colors.textMuted} />
-                  <Text style={[styles.accessText, { color: THEME.colors.textMuted }]}>{selectedMine.accessPatterns}</Text>
-                </View>
-              </View>
-              <TouchableOpacity 
-                style={styles.viewOreBtn}
-                onPress={() => router.push({ pathname: '/modal', params: { oreID: selectedMine.oreID } })}
-              >
-                <Text style={styles.viewOreBtnText}>Profile</Text>
-                <ChevronRight size={16} color="#FFF" />
-              </TouchableOpacity>
-            </View>
+        <View style={[styles.sheet, { backgroundColor: c.surface }]}>
+          {/* Handle + close row */}
+          <View style={styles.sheetTop}>
+            <View style={[styles.handle, { backgroundColor: c.border }]} />
+            <TouchableOpacity
+              style={[styles.closeBtn, { backgroundColor: c.background }]}
+              onPress={() => setSelectedMine(null)}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <X size={16} color={c.textMuted} />
+            </TouchableOpacity>
+          </View>
 
-            <View style={[styles.divider, { backgroundColor: THEME.colors.border }]} />
-
+          {/* Hero ore image */}
+          <View style={styles.heroWrap}>
             {oresLoading ? (
-              <View style={[styles.orePreviewCard, { backgroundColor: THEME.colors.background, borderColor: THEME.colors.border, justifyContent: 'center', alignItems: 'center' }]}>
-                <AppLoader size={60} />
+              <View style={[styles.heroImage, { backgroundColor: c.background, justifyContent: 'center', alignItems: 'center' }]}>
+                <AppLoader size={52} />
               </View>
-            ) : selectedOre ? (
-              <View style={[styles.orePreviewCard, { backgroundColor: THEME.colors.background, borderColor: THEME.colors.border }]}>
-                {selectedOre.imageSamples && selectedOre.imageSamples.length > 0 ? (
-                  <Image
-                    source={{ uri: selectedOre.imageSamples[0] }}
-                    style={[styles.oreThumbnail, { backgroundColor: THEME.colors.border }]}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View style={[styles.oreThumbnail, { backgroundColor: THEME.colors.border }]} />
-                )}
-                <View style={styles.oreInfo}>
-                  <Text style={[styles.oreTitle, { color: THEME.colors.text }]}>{selectedOre.name}</Text>
-
-                  <View style={styles.propertyRow}>
-                    <Layers size={14} color={THEME.colors.primary} />
-                    <Text style={[styles.propertyText, { color: THEME.colors.textMuted }]} numberOfLines={1}>{selectedOre.color}</Text>
-                  </View>
-
-                  <View style={styles.propertyRow}>
-                    <Cpu size={14} color={THEME.colors.primary} />
-                    <Text style={[styles.propertyText, { color: THEME.colors.textMuted }]}>Hardness: {selectedOre.hardness}</Text>
-                  </View>
-                </View>
-              </View>
+            ) : heroImage ? (
+              <Image source={{ uri: heroImage }} style={styles.heroImage} resizeMode="cover" />
             ) : (
-              <View style={[styles.orePreviewCard, { backgroundColor: THEME.colors.background, borderColor: THEME.colors.border }]}>
-                <Text style={[styles.propertyText, { color: THEME.colors.textMuted }]}>No associated ore data found.</Text>
+              <View style={[styles.heroImage, styles.heroPlaceholder, { backgroundColor: c.background }]}>
+                <Mountain size={40} color={c.border} />
+                <Text style={[styles.placeholderText, { color: c.textMuted }]}>No image available</Text>
               </View>
             )}
-            
-          </ScrollView>
+            {/* Ore name badge overlaid on image */}
+            {selectedOre && (
+              <View style={[styles.oreBadge, { backgroundColor: c.primary }]}>
+                <Text style={styles.oreBadgeText}>{selectedOre.name}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Mine info */}
+          <View style={styles.infoSection}>
+            <Text style={[styles.mineName, { color: c.text }]} numberOfLines={1}>{selectedMine.mineName}</Text>
+            <View style={styles.locationRow}>
+              <MapPin size={13} color={c.primary} />
+              <Text style={[styles.locationText, { color: c.textMuted }]} numberOfLines={1}>
+                {selectedMine.accessPatterns}
+              </Text>
+            </View>
+
+            {/* Stat chips */}
+            {selectedOre && !oresLoading && (
+              <View style={styles.chipsRow}>
+                <View style={[styles.chip, { backgroundColor: c.background, borderColor: c.border }]}>
+                  <Droplets size={13} color={c.primary} />
+                  <Text style={[styles.chipText, { color: c.text }]} numberOfLines={1}>{selectedOre.color}</Text>
+                </View>
+                <View style={[styles.chip, { backgroundColor: c.background, borderColor: c.border }]}>
+                  <Shield size={13} color={c.primary} />
+                  <Text style={[styles.chipText, { color: c.text }]}>{selectedOre.hardness} Mohs</Text>
+                </View>
+              </View>
+            )}
+
+            {/* CTA */}
+            <TouchableOpacity
+              style={[styles.cta, { backgroundColor: c.primary }]}
+              activeOpacity={0.85}
+              onPress={() => router.push({ pathname: '/ore-detail', params: { oreID: selectedMine.oreID } })}
+            >
+              <Text style={styles.ctaText}>View Full Mineral Profile</Text>
+              <ArrowRight size={16} color="#FFF" />
+            </TouchableOpacity>
+          </View>
         </View>
       )}
     </View>
@@ -147,128 +269,154 @@ export default function MapScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: 'column',
-  },
-  mapFull: {
+  root: {
     flex: 1,
   },
-  mapHalf: {
-    flex: 1,
-  },
-  detailsHalf: {
-    flex: 1,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 10,
-    marginTop: -20,
-  },
-  detailsScroll: {
-    padding: 24,
-  },
-  markerContainer: {
+  badge: {
+    position: 'absolute',
+    top: STATUS_H + 16,
+    left: 16,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  markerBubble: {
-    backgroundColor: '#D35400',
-    padding: 6,
-    borderRadius: 9999,
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
     elevation: 4,
   },
-  markerTail: {
-    width: 0,
-    height: 0,
-    backgroundColor: 'transparent',
-    borderStyle: 'solid',
-    borderLeftWidth: 6,
-    borderRightWidth: 6,
-    borderTopWidth: 8,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderTopColor: '#D35400',
-    marginTop: -1,
+  badgeText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
-  detailsHeader: {
+  sheet: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 20,
+    paddingBottom: 32,
+  },
+  sheetTop: {
+    alignItems: 'center',
+    paddingTop: 12,
+    paddingHorizontal: 20,
+    paddingBottom: 8,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+  },
+  closeBtn: {
+    position: 'absolute',
+    right: 20,
+    top: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  heroWrap: {
+    marginHorizontal: 20,
+    borderRadius: 16,
+    overflow: 'hidden',
     marginBottom: 16,
   },
-  mineName: {
-    fontSize: 22,
+  heroImage: {
+    width: '100%',
+    height: 160,
+    borderRadius: 16,
+  },
+  heroPlaceholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  placeholderText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  oreBadge: {
+    position: 'absolute',
+    bottom: 10,
+    left: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+  oreBadgeText: {
+    color: '#FFF',
+    fontSize: 12,
     fontWeight: '700',
-    lineHeight: 28,
+    letterSpacing: 0.3,
+  },
+  infoSection: {
+    paddingHorizontal: 20,
+    gap: 6,
+  },
+  mineName: {
+    fontSize: 20,
+    fontWeight: '800',
+    lineHeight: 26,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
     marginBottom: 4,
   },
-  accessRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  accessText: {
+  locationText: {
     fontSize: 13,
     fontWeight: '400',
-    lineHeight: 22,
-  },
-  viewOreBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#D35400',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    gap: 4,
-  },
-  viewOreBtnText: {
-    color: '#FFF',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  divider: {
-    height: 1,
-    marginVertical: 16,
-  },
-  orePreviewCard: {
-    flexDirection: 'row',
-    borderRadius: 8,
-    padding: 8,
-    gap: 12,
-    borderWidth: 1,
-  },
-  oreThumbnail: {
-    width: 80,
-    height: 80,
-    borderRadius: 4,
-  },
-  oreInfo: {
     flex: 1,
-    justifyContent: 'center',
-    gap: 6,
   },
-  oreTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    lineHeight: 28,
+  chipsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 4,
+    marginBottom: 4,
   },
-  propertyRow: {
+  chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    flex: 1,
   },
-  propertyText: {
-    fontSize: 13,
-    fontWeight: '400',
-    lineHeight: 16,
+  chipText: {
+    fontSize: 12,
+    fontWeight: '600',
     flexShrink: 1,
+  },
+  cta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 14,
+    marginTop: 8,
+  },
+  ctaText: {
+    color: '#FFF',
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
 });

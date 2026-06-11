@@ -23,7 +23,7 @@ import Svg, { Path } from 'react-native-svg';
 import { THEME } from '../../constants/theme';
 import { useAuth } from '../../hooks/use-auth';
 import { auth } from '../../services/firebase';
-import { styles } from './login.styles';
+import { styles } from '../../styles/auth/login.styles';
 
 const GoogleIcon = ({ size = 20 }: { size?: number }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24">

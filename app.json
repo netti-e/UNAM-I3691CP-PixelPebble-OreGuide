@@ -1,4 +1,4 @@
-//app.json
+
 
 {
   "expo": {
@@ -39,12 +39,23 @@
           "imageWidth": 370,
           "backgroundColor": "#000000",
           "dark": {
-          "backgroundColor": "#000000",
-          
+          "backgroundColor": "#000000"
           }
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "OreGuide needs camera access to photograph ore samples."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "OreGuide needs photo library access to select ore images."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

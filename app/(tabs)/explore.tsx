@@ -1,6 +1,7 @@
 // app/(tabs)/explore.tsx
 // [STATUS: OPERATIONAL] — Migrated to Server-Side Workflow Visualization Architecture with Deep Recursive Scanner
 
+import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { Camera, ChevronRight, Image as ImageIcon, RotateCcw, Zap } from 'lucide-react-native';
@@ -117,17 +118,7 @@ export default function ExploreScreen() {
   }, []);
 
   const convertUriToBase64 = async (uri: string): Promise<string> => {
-    const response = await fetch(uri);
-    const blob = await response.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result?.toString().split(',')[1];
-        resolve(base64String || '');
-      };
-      reader.onerror = (error) => reject(error);
-      reader.readAsDataURL(blob);
-    });
+    return await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
   };
 
   const handleIdentify = useCallback(async () => {
@@ -260,6 +251,7 @@ export default function ExploreScreen() {
 
       // 4. Wrap up cleanly into standard layout payload using intersection typing
       const finalResultObject: InferenceResponse & { output_image?: any } = {
+        status: 'success',
         detections: normalizedDetections,
         inference_time_ms: Math.round(rawData.inference_time_ms || rawData[0]?.inference_time || 0),
         model_version: "Serverless Workflow Pipeline",
@@ -448,9 +440,9 @@ function DetectionCard({ detection }: { detection: InferenceDetection }) {
       <View style={styles.detectionDivider} />
 
       <View style={styles.detectionMeta}>
-        <MetaRow label="Colour" value={detection.mineral_info.colour} />
-        <MetaRow label="Hardness" value={detection.mineral_info.hardness} />
-        <MetaRow label="Common uses" value={detection.mineral_info.common_uses} />
+        <MetaRow label="Colour" value={detection.mineral_info.colour} styles={styles} />
+        <MetaRow label="Hardness" value={detection.mineral_info.hardness} styles={styles} />
+        <MetaRow label="Common uses" value={detection.mineral_info.common_uses} styles={styles} />
       </View>
 
       <View style={styles.detectionFooter}>
@@ -461,7 +453,7 @@ function DetectionCard({ detection }: { detection: InferenceDetection }) {
   );
 }
 
-function MetaRow({ label, value }: { label: string; value: string }) {
+function MetaRow({ label, value, styles }: { label: string; value: string; styles: ReturnType<typeof getStyles> }) {
   return (
     <View style={styles.metaRow}>
       <Text style={styles.metaLabel}>{label}</Text>
