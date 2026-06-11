@@ -4,7 +4,7 @@
 import { router } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import { Bell, Bookmark, Camera, GraduationCap, LogOut, Map as MapIcon, Search, Settings, WifiOff } from 'lucide-react-native';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { FlatList, Image, SafeAreaView, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { AppLoader } from '../../components/app-loader';
 import { OreCard } from '../../components/ore-card';
@@ -12,8 +12,8 @@ import { SearchBar } from '../../components/search-bar';
 import { useAppTheme } from '../../contexts/theme-context';
 import { useAuth } from '../../hooks/use-auth';
 import { useOreSearch } from '../../hooks/use-ore-search';
-import { formatChemicalFormula } from '../../utils/format-fomula';
 import { getStyles } from '../../styles/tabs/index.styles';
+import { formatChemicalFormula } from '../../utils/format-fomula';
 
 export default function HomeScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
