@@ -1,13 +1,25 @@
+// [STATUS: EDIT — Complete file purge and sync to eliminate trailing global code fragments]
 // app/(auth)/login.tsx
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Link, router } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
 // @ts-ignore
 import { getReactNativePersistence, inMemoryPersistence, setPersistence } from 'firebase/auth';
 import { Check, Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
-import React, { useState } from 'react';
-import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+
 import { THEME } from '../../constants/theme';
 import { useAuth } from '../../hooks/use-auth';
 import { auth } from '../../services/firebase';
@@ -89,7 +101,6 @@ export default function LoginScreen() {
       await loginWithGoogle();
       router.replace('/(tabs)');
     } catch (error: any) {
-      // Ignore if user cancels the prompt
       if (error && error.message && error.message.indexOf('cancelled') !== -1) {
         return;
       }
@@ -110,122 +121,125 @@ export default function LoginScreen() {
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-      <View style={styles.content}>
-        <Text style={styles.title}>LOGIN</Text>
-        
-        <View style={styles.subtitleContainer}>
-          <Text style={styles.subtitleText}>Don't have an account? </Text>
-          <Link href="/(auth)/register" asChild>
-            <TouchableOpacity>
-              <Text style={styles.linkText}>Sign up</Text>
-            </TouchableOpacity>
-          </Link>
-        </View>
-
-        <View style={styles.inputContainer}>
-          <View style={styles.inputWrapper}>
-            <Mail size={20} color={THEME.colors.textMuted} style={styles.icon} />
-            <TextInput 
-              style={styles.input}
-              placeholder="Email"
-              placeholderTextColor={THEME.colors.textMuted}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={setEmail}
-            />
+        <View style={styles.content}>
+          <Text style={styles.title}>LOGIN</Text>
+          
+          <View style={styles.subtitleContainer}>
+            <Text style={styles.subtitleText}>Don't have an account? </Text>
+            <Link href="/(auth)/register" asChild>
+              <TouchableOpacity>
+                <Text style={styles.linkText}>Sign up</Text>
+              </TouchableOpacity>
+            </Link>
           </View>
 
-          <View style={styles.inputWrapper}>
-            <Lock size={20} color={THEME.colors.textMuted} style={styles.icon} />
-            <TextInput 
-              style={styles.input}
-              placeholder="Password"
-              placeholderTextColor={THEME.colors.textMuted}
-              secureTextEntry={secureText}
-              value={password}
-              onChangeText={setPassword}
-              autoCapitalize="none"
-            />
-            <TouchableOpacity onPress={() => setSecureText(!secureText)} style={{ padding: 4 }}>
-              {secureText ? (
-                <Eye size={20} color={THEME.colors.textMuted} />
+          <View style={styles.inputContainer}>
+            <View style={styles.inputWrapper}>
+              <Mail size={20} color={THEME.colors.textMuted} style={styles.icon} />
+              <TextInput 
+                style={styles.input}
+                placeholder="Email"
+                placeholderTextColor={THEME.colors.textMuted}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+              />
+            </View>
+
+            <View style={styles.inputWrapper}>
+              <Lock size={20} color={THEME.colors.textMuted} style={styles.icon} />
+              <TextInput 
+                style={styles.input}
+                placeholder="Password"
+                placeholderTextColor={THEME.colors.textMuted}
+                secureTextEntry={secureText}
+                value={password}
+                onChangeText={setPassword}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity onPress={() => setSecureText(!secureText)} style={{ padding: 4 }}>
+                {secureText ? (
+                  <Eye size={20} color={THEME.colors.textMuted} />
+                ) : (
+                  <EyeOff size={20} color={THEME.colors.textMuted} />
+                )}
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.optionsContainer}>
+              <TouchableOpacity
+                style={styles.rememberMeContainer}
+                onPress={() => setRememberMe(!rememberMe)}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+                  {rememberMe && <Check size={14} color="#FFFFFF" />}
+                </View>
+                <Text style={styles.rememberMeText}>Remember me</Text>
+              </TouchableOpacity>
+              
+              <Link href={{ pathname: "/(auth)/forgot-password" as any }} asChild>
+                <TouchableOpacity activeOpacity={0.7}>
+                  <Text style={styles.linkText}>Forgot password?</Text>
+                </TouchableOpacity>
+              </Link>
+            </View>
+          </View>
+
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={[styles.button, loading && { opacity: 0.7 }]} 
+              onPress={handleLogin}
+              disabled={loading}
+              activeOpacity={0.8}
+            >
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
               ) : (
-                <EyeOff size={20} color={THEME.colors.textMuted} />
+                <Text style={styles.buttonText}>Log In</Text>
               )}
             </TouchableOpacity>
           </View>
 
-          <View style={styles.optionsContainer}>
-            <TouchableOpacity
-              style={styles.rememberMeContainer}
-              onPress={() => setRememberMe(!rememberMe)}
-              activeOpacity={0.7}
-            >
-              <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-                {rememberMe && <Check size={14} color="#FFFFFF" />}
-              </View>
-              <Text style={styles.rememberMeText}>Remember me</Text>
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Text style={styles.linkText}>Forgot password?</Text>
-            </TouchableOpacity>
+          {/* Visual Divider */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: THEME.spacing.lg }}>
+            <View style={{ flex: 1, height: 1, backgroundColor: THEME.colors.border }} />
+            <Text style={{ marginHorizontal: THEME.spacing.md, color: THEME.colors.textMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.5 }}>
+              OR CONTINUE WITH
+            </Text>
+            <View style={{ flex: 1, height: 1, backgroundColor: THEME.colors.border }} />
           </View>
-        </View>
 
-        <View style={styles.buttonContainer}>
           <TouchableOpacity 
-            style={[styles.button, loading && { opacity: 0.7 }]} 
-            onPress={handleLogin}
+            style={{ 
+              flexDirection: 'row', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              backgroundColor: THEME.colors.surface, 
+              borderWidth: 1, 
+              borderColor: THEME.colors.border, 
+              borderRadius: THEME.borderRadius.xl, 
+              height: 56, 
+              gap: 10,
+              opacity: loading ? 0.7 : 1
+            }}
+            onPress={handleGoogleLogin}
             disabled={loading}
             activeOpacity={0.8}
           >
             {loading ? (
-              <ActivityIndicator color="#FFFFFF" size="small" />
+              <ActivityIndicator color={THEME.colors.primary} size="small" />
             ) : (
-              <Text style={styles.buttonText}>Log In</Text>
+              <>
+                <GoogleIcon size={20} />
+                <Text style={{ color: THEME.colors.text, fontWeight: '700', fontSize: 14 }}>
+                  Continue with Google
+                </Text>
+              </>
             )}
           </TouchableOpacity>
         </View>
-
-        {/* Visual Divider */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: THEME.spacing.lg }}>
-          <View style={{ flex: 1, height: 1, backgroundColor: THEME.colors.border }} />
-          <Text style={{ marginHorizontal: THEME.spacing.md, color: THEME.colors.textMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.5 }}>
-            OR CONTINUE WITH
-          </Text>
-          <View style={{ flex: 1, height: 1, backgroundColor: THEME.colors.border }} />
-        </View>
-
-        <TouchableOpacity 
-          style={{ 
-            flexDirection: 'row', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            backgroundColor: THEME.colors.surface, 
-            borderWidth: 1, 
-            borderColor: THEME.colors.border, 
-            borderRadius: THEME.borderRadius.xl, 
-            height: 56, 
-            gap: 10,
-            opacity: loading ? 0.7 : 1
-          }}
-          onPress={handleGoogleLogin}
-          disabled={loading}
-          activeOpacity={0.8}
-        >
-          {loading ? (
-            <ActivityIndicator color={THEME.colors.primary} size="small" />
-          ) : (
-            <>
-              <GoogleIcon size={20} />
-              <Text style={{ color: THEME.colors.text, fontWeight: '700', fontSize: 14 }}>
-                Continue with Google
-              </Text>
-            </>
-          )}
-        </TouchableOpacity>
-      </View>
       </KeyboardAvoidingView>
     </View>
   );
