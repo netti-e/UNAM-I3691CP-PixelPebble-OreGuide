@@ -9,7 +9,7 @@ import { AppLoader } from '../../components/app-loader';
 import { useAppTheme } from '../../contexts/theme-context';
 import { fetchAllOres, fetchEducationalContent, fetchMineLocations } from '../../services/firestore';
 import { MineLocation, Ore } from '../../types/ore';
-import { getStyles } from './learn.styles';
+import { getStyles } from '../../styles/tabs/learn.styles';
 
 type SubSection = 'ores' | 'basics' | 'geology' | 'mining';
 

@@ -13,7 +13,7 @@ import { useAppTheme } from '../../contexts/theme-context';
 import { useAuth } from '../../hooks/use-auth';
 import { useOreSearch } from '../../hooks/use-ore-search';
 import { formatChemicalFormula } from '../../utils/format-fomula';
-import { getStyles } from './index.styles';
+import { getStyles } from '../../styles/tabs/index.styles';
 
 export default function HomeScreen() {
   const [menuOpen, setMenuOpen] = useState(false);

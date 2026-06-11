@@ -1,4 +1,3 @@
-// app/(tabs)/learn.styles.ts
 import { Platform, StatusBar, StyleSheet } from 'react-native';
 import { ThemeColors } from '../../constants/theme';
 

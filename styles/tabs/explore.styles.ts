@@ -1,5 +1,3 @@
-// app/(tabs)/explore.styles.ts
-
 import { StyleSheet } from 'react-native';
 import { ThemeColors } from '../../constants/theme';
 
@@ -274,7 +272,6 @@ export const getStyles = (c: ThemeColors) => StyleSheet.create({
     color: c.primary,
   },
 
-  // Unused but kept for compat
   card: { backgroundColor: c.surface, borderRadius: 16, padding: 24, borderWidth: 1, borderColor: c.border, marginBottom: 16 },
   cardLabel: { fontSize: 12, fontWeight: '700', color: c.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
   confidenceRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
