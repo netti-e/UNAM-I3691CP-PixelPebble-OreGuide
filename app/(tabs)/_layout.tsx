@@ -2,39 +2,26 @@ import { Tabs } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import { Camera, GraduationCap, Heart, Map } from 'lucide-react-native';
 import React, { useEffect, useRef } from 'react';
-import { THEME } from '../../constants/theme';
+import { useAppTheme } from '../../contexts/theme-context';
+
+// Module-level ref so the tabPress listener can trigger the animation
+// without prop drilling through the tabBarIcon render prop
+let triggerHomePlay: (() => void) | null = null;
 
 const AnimatedHomeIcon = ({ focused, color, size }: { focused: boolean; color: string; size: number }) => {
   const animationRef = useRef<LottieView>(null);
-  
-  // FIX: Use ReturnType to get the correct type regardless of environment
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    triggerHomePlay = () => animationRef.current?.play();
+    return () => { triggerHomePlay = null; };
+  }, []);
 
   useEffect(() => {
     if (focused) {
-      // Play immediately on focus
       animationRef.current?.play();
-
-      // Clear any existing interval before starting a new one
-      if (intervalRef.current) clearInterval(intervalRef.current);
-
-      // Set the interval
-      intervalRef.current = setInterval(() => {
-        animationRef.current?.play();
-      }, 4000);
     } else {
-      // Clear interval and reset animation when tab is not focused
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
       animationRef.current?.reset();
     }
-
-    // Cleanup on unmount
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
   }, [focused]);
 
   return (
@@ -50,16 +37,19 @@ const AnimatedHomeIcon = ({ focused, color, size }: { focused: boolean; color: s
 };
 
 export default function TabsLayout() {
+  const { theme } = useAppTheme();
+  const c = theme.colors;
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: THEME.colors.primary,
-        tabBarInactiveTintColor: THEME.colors.textMuted,
+        tabBarActiveTintColor: c.primary,
+        tabBarInactiveTintColor: c.textMuted,
         tabBarStyle: {
-          backgroundColor: THEME.colors.surface,
+          backgroundColor: c.surface,
           borderTopWidth: 1,
-          borderTopColor: THEME.colors.border,
+          borderTopColor: c.border,
           height: 60,
           paddingBottom: 8,
           paddingTop: 8,
@@ -72,6 +62,9 @@ export default function TabsLayout() {
         options={{
           title: 'Home',
           tabBarIcon: (props) => <AnimatedHomeIcon {...props} />,
+        }}
+        listeners={{
+          tabPress: () => { triggerHomePlay?.(); },
         }}
       />
       <Tabs.Screen

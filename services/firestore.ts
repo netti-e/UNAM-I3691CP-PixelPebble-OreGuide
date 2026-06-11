@@ -5,33 +5,50 @@ import { Ore, MineLocation } from '../types/ore';
 import { db } from './firebase';
 
 const mapDocToOre = (id: string, data: DocumentData): Ore => {
+  // Use the oreID field if present (trim trailing spaces from real docs), otherwise fall back to doc ID
+  const oreID = ((data.oreID as string) || id).trim();
+
+  // Handle mainImageURL (capital URL) and mainImageUrl (camel) variants across docs
+  const mainImage = (data.mainImageURL || data.mainImageUrl || '') as string;
+  const samples = Array.isArray(data.imageSamples) ? (data.imageSamples as string[]) : [];
+  const seen = new Set<string>();
+  const imageSamples: string[] = [];
+  for (const url of [mainImage, ...samples]) {
+    if (url && !seen.has(url)) { seen.add(url); imageSamples.push(url); }
+  }
+
   return {
-    oreID: id,
+    oreID,
     name: data.name || 'Unnamed Sample',
     color: data.color || 'Unknown Colour Matrix',
-    // Matches spellings like "hardeness" directly from your database
-    hardness: data.hardeness || data.hardness || 'N/A', 
-    chemicalComposition: data.chemicalComposition || 'Unknown Formula',
+    hardness: data.hardeness || data.hardness || 'N/A',
+    // Handle chemicalCompostion typo in original Firestore docs
+    chemicalComposition: data.chemicalComposition || data.chemicalCompostion || 'Unknown Formula',
     uses: data.uses || 'No commercial applications documented.',
-    imageSamples: Array.isArray(data.imageSamples) && data.imageSamples.length > 0
-      ? data.imageSamples 
-      : (data.mainImageuRL ? [data.mainImageuRL] : [])
+    imageSamples,
   };
 };
 
 export const fetchAllOres = async (): Promise<Ore[]> => {
   const oresCollection = collection(db, 'ores');
   const oreSnapshot = await getDocs(oresCollection);
-  
-  return oreSnapshot.docs.map(doc => mapDocToOre(doc.id, doc.data()));
+  const all = oreSnapshot.docs.map(doc => mapDocToOre(doc.id, doc.data()));
+
+  // Deduplicate by oreID — prefer the doc with more images (Firebase Storage originals
+  // have mainImageUrl + imageSamples; seeded docs only have 1 Wikipedia URL)
+  const byID = new Map<string, Ore>();
+  for (const ore of all) {
+    const existing = byID.get(ore.oreID);
+    if (!existing || ore.imageSamples.length > existing.imageSamples.length) {
+      byID.set(ore.oreID, ore);
+    }
+  }
+  return [...byID.values()];
 };
 
 export const fetchFeaturedOres = async (maxCount: number = 6): Promise<Ore[]> => {
-  const oresCollection = collection(db, 'ores');
-  const featuredQuery = query(oresCollection, limit(maxCount));
-  const oreSnapshot = await getDocs(featuredQuery);
-
-  return oreSnapshot.docs.map(doc => mapDocToOre(doc.id, doc.data()));
+  const all = await fetchAllOres();
+  return all.slice(0, maxCount);
 };
 
 export const fetchMineLocations = async (): Promise<MineLocation[]> => {

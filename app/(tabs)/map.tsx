@@ -6,43 +6,48 @@ import { StyleSheet, View, Text, Image, TouchableOpacity, ScrollView } from 'rea
 import MapView, { Marker, UrlTile } from 'react-native-maps';
 import { useRouter } from 'expo-router';
 import { Pickaxe, ChevronRight, MapPin, Layers, Cpu } from 'lucide-react-native';
+import { AppLoader } from '../../components/app-loader';
 import { MOCK_MINE_LOCATIONS } from '../../constants/mines';
-import { THEME } from '../../constants/theme';
+import { useAppTheme } from '../../contexts/theme-context';
 import { fetchAllOres, fetchMineLocations } from '../../services/firestore';
 import { MineLocation, Ore } from '../../types/ore';
 
 export default function MapScreen() {
   const router = useRouter();
+  const { theme } = useAppTheme();
+  const THEME = theme;
   const [selectedMine, setSelectedMine] = useState<MineLocation | null>(null);
   const [mines, setMines] = useState<MineLocation[]>(MOCK_MINE_LOCATIONS);
   const [ores, setOres] = useState<Ore[]>([]);
+  const [oresLoading, setOresLoading] = useState(true);
+  const [mapRegion, setMapRegion] = useState({
+    latitude: -22.0,
+    longitude: 18.0,
+    latitudeDelta: 22.0,
+    longitudeDelta: 18.0,
+  });
 
   useEffect(() => {
     fetchMineLocations().then(data => { if (data.length > 0) setMines(data); }).catch(() => {});
-    fetchAllOres().then(setOres).catch(() => {});
+    fetchAllOres()
+      .then(data => setOres(data))
+      .catch(() => {})
+      .finally(() => setOresLoading(false));
   }, []);
-
-  // Approximate center of Namibia
-  const initialRegion = {
-    latitude: -22.5597,
-    longitude: 17.0832,
-    latitudeDelta: 10.0,
-    longitudeDelta: 10.0,
-  };
 
   const selectedOre = selectedMine
     ? ores.find(o => o.oreID === selectedMine.oreID) ?? null
     : null;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: THEME.colors.background }]}>
       {/* Map Section */}
       <View style={selectedMine ? styles.mapHalf : styles.mapFull}>
         <MapView
           style={StyleSheet.absoluteFillObject}
-          initialRegion={initialRegion}
+          region={mapRegion}
+          onRegionChangeComplete={setMapRegion}
           mapType="none"
-          // If they tap the map background, deselect the mine to go full screen
           onPress={(e) => {
             if (e.nativeEvent.action !== 'marker-press') {
               setSelectedMine(null);
@@ -77,16 +82,15 @@ export default function MapScreen() {
         </MapView>
       </View>
 
-      {/* Details Section (Bottom Half) */}
       {selectedMine && (
-        <View style={styles.detailsHalf}>
+        <View style={[styles.detailsHalf, { backgroundColor: THEME.colors.surface }]}>
           <ScrollView contentContainerStyle={styles.detailsScroll}>
             <View style={styles.detailsHeader}>
               <View>
-                <Text style={styles.mineName}>{selectedMine.mineName}</Text>
+                <Text style={[styles.mineName, { color: THEME.colors.text }]}>{selectedMine.mineName}</Text>
                 <View style={styles.accessRow}>
                   <MapPin size={14} color={THEME.colors.textMuted} />
-                  <Text style={styles.accessText}>{selectedMine.accessPatterns}</Text>
+                  <Text style={[styles.accessText, { color: THEME.colors.textMuted }]}>{selectedMine.accessPatterns}</Text>
                 </View>
               </View>
               <TouchableOpacity 
@@ -98,30 +102,40 @@ export default function MapScreen() {
               </TouchableOpacity>
             </View>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: THEME.colors.border }]} />
 
-            {selectedOre ? (
-              <View style={styles.orePreviewCard}>
-                {selectedOre.imageSamples && selectedOre.imageSamples.length > 0 && (
-                  <Image source={{ uri: selectedOre.imageSamples[0] }} style={styles.oreThumbnail} />
+            {oresLoading ? (
+              <View style={[styles.orePreviewCard, { backgroundColor: THEME.colors.background, borderColor: THEME.colors.border, justifyContent: 'center', alignItems: 'center' }]}>
+                <AppLoader size={60} />
+              </View>
+            ) : selectedOre ? (
+              <View style={[styles.orePreviewCard, { backgroundColor: THEME.colors.background, borderColor: THEME.colors.border }]}>
+                {selectedOre.imageSamples && selectedOre.imageSamples.length > 0 ? (
+                  <Image
+                    source={{ uri: selectedOre.imageSamples[0] }}
+                    style={[styles.oreThumbnail, { backgroundColor: THEME.colors.border }]}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={[styles.oreThumbnail, { backgroundColor: THEME.colors.border }]} />
                 )}
                 <View style={styles.oreInfo}>
-                  <Text style={styles.oreTitle}>{selectedOre.name}</Text>
-                  
+                  <Text style={[styles.oreTitle, { color: THEME.colors.text }]}>{selectedOre.name}</Text>
+
                   <View style={styles.propertyRow}>
                     <Layers size={14} color={THEME.colors.primary} />
-                    <Text style={styles.propertyText} numberOfLines={1}>{selectedOre.color}</Text>
+                    <Text style={[styles.propertyText, { color: THEME.colors.textMuted }]} numberOfLines={1}>{selectedOre.color}</Text>
                   </View>
-                  
+
                   <View style={styles.propertyRow}>
                     <Cpu size={14} color={THEME.colors.primary} />
-                    <Text style={styles.propertyText}>Hardness: {selectedOre.hardness}</Text>
+                    <Text style={[styles.propertyText, { color: THEME.colors.textMuted }]}>Hardness: {selectedOre.hardness}</Text>
                   </View>
                 </View>
               </View>
             ) : (
-              <View style={styles.orePreviewCard}>
-                <Text style={styles.propertyText}>No associated ore data found.</Text>
+              <View style={[styles.orePreviewCard, { backgroundColor: THEME.colors.background, borderColor: THEME.colors.border }]}>
+                <Text style={[styles.propertyText, { color: THEME.colors.textMuted }]}>No associated ore data found.</Text>
               </View>
             )}
             
@@ -135,39 +149,36 @@ export default function MapScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: THEME.colors.background,
     flexDirection: 'column',
   },
   mapFull: {
     flex: 1,
   },
   mapHalf: {
-    flex: 1, // 50% height
+    flex: 1,
   },
   detailsHalf: {
-    flex: 1, // 50% height
-    backgroundColor: THEME.colors.surface,
-    borderTopLeftRadius: THEME.borderRadius.xl,
-    borderTopRightRadius: THEME.borderRadius.xl,
+    flex: 1,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 10,
-    marginTop: -20, // Overlap the map slightly
+    marginTop: -20,
   },
   detailsScroll: {
-    padding: THEME.spacing.lg,
+    padding: 24,
   },
-  // Marker Styles
   markerContainer: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   markerBubble: {
-    backgroundColor: THEME.colors.primary,
+    backgroundColor: '#D35400',
     padding: 6,
-    borderRadius: THEME.borderRadius.round,
+    borderRadius: 9999,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
@@ -184,20 +195,19 @@ const styles = StyleSheet.create({
     borderTopWidth: 8,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderTopColor: THEME.colors.primary,
+    borderTopColor: '#D35400',
     marginTop: -1,
   },
-  // Details Content
   detailsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: THEME.spacing.md,
+    marginBottom: 16,
   },
   mineName: {
-    ...THEME.typography.h1,
     fontSize: 22,
-    color: THEME.colors.text,
+    fontWeight: '700',
+    lineHeight: 28,
     marginBottom: 4,
   },
   accessRow: {
@@ -206,17 +216,17 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   accessText: {
-    ...THEME.typography.body,
     fontSize: 13,
-    color: THEME.colors.textMuted,
+    fontWeight: '400',
+    lineHeight: 22,
   },
   viewOreBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: THEME.colors.primary,
+    backgroundColor: '#D35400',
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: THEME.borderRadius.md,
+    borderRadius: 8,
     gap: 4,
   },
   viewOreBtnText: {
@@ -226,23 +236,19 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: THEME.colors.border,
-    marginVertical: THEME.spacing.md,
+    marginVertical: 16,
   },
   orePreviewCard: {
     flexDirection: 'row',
-    backgroundColor: THEME.colors.background,
-    borderRadius: THEME.borderRadius.md,
-    padding: THEME.spacing.sm,
+    borderRadius: 8,
+    padding: 8,
     gap: 12,
     borderWidth: 1,
-    borderColor: THEME.colors.border,
   },
   oreThumbnail: {
     width: 80,
     height: 80,
-    borderRadius: THEME.borderRadius.sm,
-    backgroundColor: THEME.colors.border,
+    borderRadius: 4,
   },
   oreInfo: {
     flex: 1,
@@ -250,9 +256,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   oreTitle: {
-    ...THEME.typography.h2,
     fontSize: 18,
-    color: THEME.colors.text,
+    fontWeight: '600',
+    lineHeight: 28,
   },
   propertyRow: {
     flexDirection: 'row',
@@ -260,9 +266,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   propertyText: {
-    ...THEME.typography.caption,
     fontSize: 13,
-    color: THEME.colors.textMuted,
+    fontWeight: '400',
+    lineHeight: 16,
     flexShrink: 1,
   },
 });

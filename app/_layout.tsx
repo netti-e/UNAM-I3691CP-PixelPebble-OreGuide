@@ -20,6 +20,7 @@ import Animated, {
 
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { DarkModeProvider } from '@/contexts/theme-context';
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -112,6 +113,7 @@ function RootLayoutContent() {
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal', headerShown: false }} />
+          <Stack.Screen name="settings" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
@@ -165,7 +167,11 @@ function RootLayoutContent() {
 }
 
 export default function RootLayout() {
-  return <AuthProvider><RootLayoutContent /></AuthProvider>;
+  return (
+    <DarkModeProvider>
+      <AuthProvider><RootLayoutContent /></AuthProvider>
+    </DarkModeProvider>
+  );
 }
 
 const styles = StyleSheet.create({

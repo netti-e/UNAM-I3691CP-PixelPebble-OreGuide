@@ -1,5 +1,5 @@
 // scripts/seed-firestore.js
-// Pushes local static data (mines + educational content) to Firestore.
+// Pushes ores, mines, and educational content to Firestore.
 // Run with: node scripts/seed-firestore.js
 
 const path = require('path');
@@ -8,7 +8,6 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const { initializeApp } = require('firebase/app');
 const { getFirestore, doc, setDoc } = require('firebase/firestore');
 
-// ── Firebase config (from .env) ──────────────────────────────────────────────
 const firebaseConfig = {
   apiKey:            process.env.EXPO_PUBLIC_FIREBASE_API_KEY?.trim(),
   authDomain:        process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN?.trim(),
@@ -21,7 +20,129 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
-// ── Data ─────────────────────────────────────────────────────────────────────
+// ── Ores ──────────────────────────────────────────────────────────────────────
+
+const ORES = [
+  {
+    oreID: 'ore-malachite',
+    name: 'Malachite',
+    color: 'Bright green with banded patterns',
+    hardness: '3.5 – 4',
+    chemicalComposition: 'Cu₂(CO₃)(OH)₂',
+    uses: 'Ornamental gemstone, pigment, copper ore. Namibia\'s Tsumeb Mine produced world-class specimens used in jewellery, carvings, and museum collections globally.',
+    imageSamples: ['https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/MalachiteUSGOV.jpg/800px-MalachiteUSGOV.jpg'],
+  },
+  {
+    oreID: 'ore-gold',
+    name: 'Gold',
+    color: 'Metallic yellow',
+    hardness: '2.5 – 3',
+    chemicalComposition: 'Au',
+    uses: 'Monetary reserve, electronics, jewellery, aerospace components. Namibia\'s Navachab and Otjikoto mines are major producers for the southern African gold circuit.',
+    imageSamples: ['https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/GoldNuggetUSGS19887.jpg/800px-GoldNuggetUSGS19887.jpg'],
+  },
+  {
+    oreID: 'ore-uranium',
+    name: 'Uraninite (Uranium Ore)',
+    color: 'Black to brownish-black, sometimes grey',
+    hardness: '5 – 6',
+    chemicalComposition: 'UO₂',
+    uses: 'Nuclear fuel for power generation. Namibia is one of the world\'s top-3 uranium producers via Rössing and Husab mines, supplying reactors across Europe and Asia.',
+    imageSamples: ['https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Pitchblende_schlema-alberoda.jpg/800px-Pitchblende_schlema-alberoda.jpg'],
+  },
+  {
+    oreID: 'ore-chalcopyrite',
+    name: 'Chalcopyrite',
+    color: 'Brass-yellow with iridescent tarnish',
+    hardness: '3.5 – 4',
+    chemicalComposition: 'CuFeS₂',
+    uses: 'Primary copper ore globally. Smelted to produce copper for electrical wiring, plumbing, industrial machinery, and alloy production.',
+    imageSamples: ['https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Chalcopyrite-Sphalerite-Galena-chalc28b.jpg/800px-Chalcopyrite-Sphalerite-Galena-chalc28b.jpg'],
+  },
+  {
+    oreID: 'ore-sphalerite',
+    name: 'Sphalerite',
+    color: 'Brown to black, sometimes yellow or red',
+    hardness: '3.5 – 4',
+    chemicalComposition: 'ZnS',
+    uses: 'Principal zinc ore. Zinc is critical for galvanising steel, die-casting alloys, sunscreen, and battery anodes. The Skorpion Zinc Mine near Rosh Pinah is one of Africa\'s largest zinc operations.',
+    imageSamples: ['https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Sphalerite-177181.jpg/800px-Sphalerite-177181.jpg'],
+  },
+  {
+    oreID: 'ore-galena',
+    name: 'Galena',
+    color: 'Lead-grey with bright metallic lustre',
+    hardness: '2.5',
+    chemicalComposition: 'PbS',
+    uses: 'Primary lead ore. Used in car batteries, radiation shielding, soundproofing, and historically in pipes and solder. Rosh Pinah is a major galena and sphalerite deposit.',
+    imageSamples: ['https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Galena_chunk.jpg/800px-Galena_chunk.jpg'],
+  },
+  {
+    oreID: 'ore-diamond',
+    name: 'Diamond',
+    color: 'Colourless to pale yellow; rare blues and pinks',
+    hardness: '10',
+    chemicalComposition: 'C',
+    uses: 'Gemstone, industrial abrasive, cutting tools, semiconductors. Namibia\'s Sperrgebiet coastal strip and Namdeb marine operations recover gem-quality diamonds from ancient ocean terraces.',
+    imageSamples: ['https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Carbon_diamond_crystal.jpg/800px-Carbon_diamond_crystal.jpg'],
+  },
+  {
+    oreID: 'ore-tourmaline',
+    name: 'Tourmaline',
+    color: 'Black (schorl), green, pink, or multi-coloured',
+    hardness: '7 – 7.5',
+    chemicalComposition: 'NaFe₃Al₆(BO₃)₃Si₆O₁₈(OH)₄',
+    uses: 'Gemstone, piezoelectric sensors, pressure gauges. Namibia\'s Erongo and Brandberg pegmatites produce spectacular schorl and multi-coloured elbaite crystals prized by collectors worldwide.',
+    imageSamples: ['https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Tourmaline-118682.jpg/800px-Tourmaline-118682.jpg'],
+  },
+  {
+    oreID: 'ore-aquamarine',
+    name: 'Aquamarine',
+    color: 'Sky blue to sea-green, vitreous lustre',
+    hardness: '7.5 – 8',
+    chemicalComposition: 'Be₃Al₂Si₆O₁₈',
+    uses: 'Premium gemstone in jewellery and lapidary. Namibia\'s Erongo Mountains and Brandberg area yield exceptional gem-quality crystals exported to cutting centres in Germany and the USA.',
+    imageSamples: ['https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Aquamarine_on_muscovite-RoyalOntarioMuseum-Jan18-09.jpg/800px-Aquamarine_on_muscovite-RoyalOntarioMuseum-Jan18-09.jpg'],
+  },
+  {
+    oreID: 'ore-fluorite',
+    name: 'Fluorite',
+    color: 'Purple, green, blue, yellow, colourless',
+    hardness: '4',
+    chemicalComposition: 'CaF₂',
+    uses: 'Flux in steel smelting, fluorochemical production, optics for UV lenses, and jewellery. Namibian fluorite fluoresces vividly under UV light and is a popular collector mineral.',
+    imageSamples: ['https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Fluorite_with_Quartz_-_Silesia%2C_Poland.jpg/800px-Fluorite_with_Quartz_-_Silesia%2C_Poland.jpg'],
+  },
+  {
+    oreID: 'ore-pyrite',
+    name: 'Pyrite',
+    color: 'Pale brass-yellow, metallic lustre',
+    hardness: '6 – 6.5',
+    chemicalComposition: 'FeS₂',
+    uses: 'Sulphur and sulphuric acid production, iron ore, jewellery (fool\'s gold). Often associated with gold deposits. Cubic pyrite crystals from Namibian skarns are popular specimens.',
+    imageSamples: ['https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Pyrite_60648.jpg/800px-Pyrite_60648.jpg'],
+  },
+  {
+    oreID: 'ore-hematite',
+    name: 'Hematite',
+    color: 'Silver-grey to reddish-brown; red streak',
+    hardness: '5.5 – 6.5',
+    chemicalComposition: 'Fe₂O₃',
+    uses: 'Primary iron ore globally. Used in steel, pigments (ochre), polishing compounds, and as an ornamental stone. Namibia has extensive banded iron formations in the Damara Belt.',
+    imageSamples: ['https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/HematiteUSGOV.jpg/800px-HematiteUSGOV.jpg'],
+  },
+  {
+    oreID: 'ore-azurite',
+    name: 'Azurite',
+    color: 'Deep azure blue to violet-blue',
+    hardness: '3.5 – 4',
+    chemicalComposition: 'Cu₃(CO₃)₂(OH)₂',
+    uses: 'Ornamental stone, historical blue pigment in paintings, copper ore indicator mineral. Tsumeb Mine produced some of the finest azurite crystal clusters ever documented.',
+    imageSamples: ['https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/AzuriteUSGS.jpg/800px-AzuriteUSGS.jpg'],
+  },
+];
+
+// ── Mines ─────────────────────────────────────────────────────────────────────
 
 const MINE_LOCATIONS = [
   {
@@ -29,7 +150,7 @@ const MINE_LOCATIONS = [
     oreID: 'ore-malachite',
     mineName: 'Tsumeb Mine',
     coordinates: { latitude: -19.2333, longitude: 17.7167 },
-    accessPatterns: 'Active Mine (Historical), Restricted Access',
+    accessPatterns: 'Historical Mine, Museum Access',
   },
   {
     locationID: 'mine-navachab',
@@ -50,9 +171,81 @@ const MINE_LOCATIONS = [
     oreID: 'ore-chalcopyrite',
     mineName: 'Ongopolo Copper Mine',
     coordinates: { latitude: -19.25, longitude: 17.65 },
-    accessPatterns: 'Active Mine',
+    accessPatterns: 'Active Mine, Restricted Access',
+  },
+  {
+    locationID: 'mine-skorpion',
+    oreID: 'ore-sphalerite',
+    mineName: 'Skorpion Zinc Mine',
+    coordinates: { latitude: -27.85, longitude: 16.5833 },
+    accessPatterns: 'Active Mine, Restricted Access',
+  },
+  {
+    locationID: 'mine-roshpinah',
+    oreID: 'ore-galena',
+    mineName: 'Rosh Pinah Mine',
+    coordinates: { latitude: -27.9167, longitude: 16.7333 },
+    accessPatterns: 'Active Mine, Restricted Access',
+  },
+  {
+    locationID: 'mine-husab',
+    oreID: 'ore-uranium',
+    mineName: 'Husab Uranium Mine',
+    coordinates: { latitude: -22.2833, longitude: 15.1167 },
+    accessPatterns: 'Active Mine, Highly Restricted Access',
+  },
+  {
+    locationID: 'mine-otjikoto',
+    oreID: 'ore-gold',
+    mineName: 'Otjikoto Gold Mine',
+    coordinates: { latitude: -19.0667, longitude: 17.0333 },
+    accessPatterns: 'Active Mine, Restricted Access',
+  },
+  {
+    locationID: 'mine-langerheinrich',
+    oreID: 'ore-uranium',
+    mineName: 'Langer Heinrich Mine',
+    coordinates: { latitude: -23.35, longitude: 15.3333 },
+    accessPatterns: 'Active Mine, Restricted Access',
+  },
+  {
+    locationID: 'mine-erongo',
+    oreID: 'ore-tourmaline',
+    mineName: 'Erongo Pegmatite Fields',
+    coordinates: { latitude: -21.5, longitude: 15.9333 },
+    accessPatterns: 'Semi-open, Guided Access Available',
+  },
+  {
+    locationID: 'mine-uis',
+    oreID: 'ore-aquamarine',
+    mineName: 'Uis Gem Mine',
+    coordinates: { latitude: -21.2, longitude: 14.8333 },
+    accessPatterns: 'Open Artisanal Mining Area',
+  },
+  {
+    locationID: 'mine-matchless',
+    oreID: 'ore-chalcopyrite',
+    mineName: 'Matchless Copper Mine',
+    coordinates: { latitude: -22.5167, longitude: 17.25 },
+    accessPatterns: 'Historical Mine, Restricted Access',
+  },
+  {
+    locationID: 'mine-namdeb',
+    oreID: 'ore-diamond',
+    mineName: 'Namdeb Diamond Coast',
+    coordinates: { latitude: -27.45, longitude: 15.6667 },
+    accessPatterns: 'Restricted — Sperrgebiet Zone',
+  },
+  {
+    locationID: 'mine-brandberg',
+    oreID: 'ore-fluorite',
+    mineName: 'Brandberg West Mine',
+    coordinates: { latitude: -20.9667, longitude: 13.9 },
+    accessPatterns: 'Historical Mine, Public Access to Area',
   },
 ];
+
+// ── Educational Content ───────────────────────────────────────────────────────
 
 const EDUCATIONAL_CONTENT = {
   basics: {
@@ -140,6 +333,14 @@ const EDUCATIONAL_CONTENT = {
 
 // ── Seed functions ────────────────────────────────────────────────────────────
 
+async function seedOres() {
+  console.log('\n💎 Seeding ores collection...');
+  for (const ore of ORES) {
+    await setDoc(doc(db, 'ores', ore.oreID), ore);
+    console.log(`  ✓ ${ore.name}`);
+  }
+}
+
 async function seedMines() {
   console.log('\n📍 Seeding mines collection...');
   for (const mine of MINE_LOCATIONS) {
@@ -160,6 +361,7 @@ async function seedEducationalContent() {
 
 (async () => {
   try {
+    await seedOres();
     await seedMines();
     await seedEducationalContent();
     console.log('\n✅ Firestore seed complete.\n');

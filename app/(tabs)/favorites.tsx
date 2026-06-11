@@ -1,68 +1,81 @@
 // app/(tabs)/favorites.tsx
-// [STATUS: EDIT] — Implemented interactive Favorites list using Firestore hook
 
-import React, { useMemo } from 'react';
-import { StyleSheet, Text, View, FlatList, ActivityIndicator } from 'react-native';
+import { BookmarkMinus } from 'lucide-react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { BookmarkMinus } from 'lucide-react-native';
-import { THEME } from '../../constants/theme';
-import { useFavorites } from '../../hooks/use-favorites';
-import { ALL_ORES } from '../../constants/ores';
+import { AppLoader } from '../../components/app-loader';
 import { OreCard } from '../../components/ore-card';
+import { THEME } from '../../constants/theme';
+import { useAppTheme } from '../../contexts/theme-context';
 import { useAuth } from '../../hooks/use-auth';
+import { useFavorites } from '../../hooks/use-favorites';
+import { fetchAllOres } from '../../services/firestore';
+import { Ore } from '../../types/ore';
 
 export default function FavoritesScreen() {
   const router = useRouter();
+  const { theme } = useAppTheme();
+  const c = theme.colors;
   const { user } = useAuth();
-  const { favorites, loading } = useFavorites();
+  const { favorites, loading: favLoading } = useFavorites();
+  const [allOres, setAllOres] = useState<Ore[]>([]);
+  const [oresLoading, setOresLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAllOres()
+      .then(setAllOres)
+      .catch(() => {})
+      .finally(() => setOresLoading(false));
+  }, []);
 
   const favoriteOres = useMemo(() => {
     return favorites
-      .map(id => ALL_ORES.find(ore => ore.oreID === id))
-      .filter(Boolean); // removes any undefined elements if data was deleted
-  }, [favorites]);
+      .map(id => allOres.find(ore => ore.oreID === id))
+      .filter(Boolean) as Ore[];
+  }, [favorites, allOres]);
 
   if (!user) {
     return (
-      <SafeAreaView style={styles.centerContainer}>
-        <BookmarkMinus size={48} color={THEME.colors.textMuted} />
-        <Text style={styles.emptyTitle}>Not Logged In</Text>
-        <Text style={styles.emptySubtitle}>Log in to save and view your favorite minerals offline.</Text>
+      <SafeAreaView style={[styles.centerContainer, { backgroundColor: c.background }]}>
+        <BookmarkMinus size={48} color={c.textMuted} />
+        <Text style={[styles.emptyTitle, { color: c.textMuted }]}>Not Logged In</Text>
+        <Text style={[styles.emptySubtitle, { color: c.textMuted }]}>Log in to save and view your favorite minerals.</Text>
       </SafeAreaView>
     );
   }
 
-  if (loading) {
+  if (favLoading || oresLoading) {
     return (
-      <SafeAreaView style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={THEME.colors.primary} />
+      <SafeAreaView style={[styles.centerContainer, { backgroundColor: c.background }]}>
+        <AppLoader size={80} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Saved Minerals</Text>
-        <Text style={styles.subtitle}>{favoriteOres.length} Items Collection</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: c.background }]}>
+      <View style={[styles.header, { borderBottomColor: c.border }]}>
+        <Text style={[styles.title, { color: c.text }]}>Saved Minerals</Text>
+        <Text style={[styles.subtitle, { color: c.primary }]}>{favoriteOres.length} item{favoriteOres.length !== 1 ? 's' : ''} saved</Text>
       </View>
 
       {favoriteOres.length === 0 ? (
         <View style={styles.emptyState}>
-          <BookmarkMinus size={48} color={THEME.colors.border} />
-          <Text style={styles.emptyTitle}>No saved minerals</Text>
-          <Text style={styles.emptySubtitle}>Tap the heart icon on any ore profile to add it to your collection.</Text>
+          <BookmarkMinus size={48} color={c.border} />
+          <Text style={[styles.emptyTitle, { color: c.textMuted }]}>No saved minerals</Text>
+          <Text style={[styles.emptySubtitle, { color: c.textMuted }]}>Tap the heart icon on any ore profile to add it to your collection.</Text>
         </View>
       ) : (
         <FlatList
           data={favoriteOres}
-          keyExtractor={(item) => item!.oreID}
+          keyExtractor={(item) => item.oreID}
           contentContainerStyle={styles.listContent}
           renderItem={({ item }) => (
-            <OreCard 
-              ore={item!} 
-              onPress={() => router.push({ pathname: '/modal', params: { oreID: item!.oreID } })} 
+            <OreCard
+              ore={item}
+              onPress={() => router.push({ pathname: '/modal', params: { oreID: item.oreID } })}
             />
           )}
         />
@@ -108,7 +121,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: THEME.spacing.xl,
-    marginTop: -40, // visual center adjust
+    marginTop: -40,
   },
   emptyTitle: {
     ...THEME.typography.h2,

@@ -3,29 +3,25 @@
 
 import { router } from 'expo-router';
 import LottieView from 'lottie-react-native';
-import { Bell, Bookmark, Camera, GraduationCap, LogOut, Map as MapIcon, Search, WifiOff } from 'lucide-react-native';
-import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, SafeAreaView, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Bell, Bookmark, Camera, GraduationCap, LogOut, Map as MapIcon, Search, Settings, WifiOff } from 'lucide-react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { FlatList, Image, SafeAreaView, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { AppLoader } from '../../components/app-loader';
 import { OreCard } from '../../components/ore-card';
 import { SearchBar } from '../../components/search-bar';
-import { THEME } from '../../constants/theme';
+import { useAppTheme } from '../../contexts/theme-context';
 import { useAuth } from '../../hooks/use-auth';
 import { useOreSearch } from '../../hooks/use-ore-search';
 import { formatChemicalFormula } from '../../utils/format-fomula';
-import { styles } from './index.styles';
+import { getStyles } from './index.styles';
 
 export default function HomeScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
   const profileAnimation = useRef<LottieView>(null);
   const { logout, user } = useAuth();
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => getStyles(theme.colors), [theme]);
   
-  // Interval to play animation every 2 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      profileAnimation.current?.play();
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
 
   const {
     ores,
@@ -75,7 +71,7 @@ export default function HomeScreen() {
       <View style={styles.headerRow}>
         <Text style={styles.title}>OreGuide</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
-          <Bell size={22} color={THEME.colors.text} />
+          <Bell size={22} color={theme.colors.text} />
           
           <TouchableOpacity 
             style={styles.profileButton} 
@@ -106,14 +102,18 @@ export default function HomeScreen() {
       
       {menuOpen && (
         <View style={styles.dropdown}>
-          <View style={{ paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: THEME.colors.border }}>
-            <Text style={{ fontSize: 13, fontWeight: '700', color: THEME.colors.text }} numberOfLines={1}>
+          <View style={{ paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: theme.colors.border }}>
+            <Text style={{ fontSize: 13, fontWeight: '700', color: theme.colors.text }} numberOfLines={1}>
               {user?.displayName || 'Explorer'}
             </Text>
-            <Text style={{ fontSize: 11, color: THEME.colors.textMuted }} numberOfLines={1}>
+            <Text style={{ fontSize: 11, color: theme.colors.textMuted }} numberOfLines={1}>
               {user?.email || ''}
             </Text>
           </View>
+          <TouchableOpacity style={styles.dropdownItem} onPress={() => { setMenuOpen(false); router.push('/settings'); }}>
+            <Settings size={18} color={theme.colors.textMuted} />
+            <Text style={styles.dropdownItemText}>Settings</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.dropdownItem} onPress={handleLogout}>
             <LogOut size={18} color="#EF4444" />
             <Text style={[styles.dropdownItemText, styles.logoutText]}>Log Out</Text>
@@ -147,8 +147,8 @@ export default function HomeScreen() {
             )}
             ListEmptyComponent={
               <View style={{ alignItems: 'center', marginTop: 40 }}>
-                <Search size={48} color={THEME.colors.border} />
-                <Text style={{ color: THEME.colors.textMuted, marginTop: 16 }}>No minerals found matching these filters.</Text>
+                <Search size={48} color={theme.colors.border} />
+                <Text style={{ color: theme.colors.textMuted, marginTop: 16 }}>No minerals found matching these filters.</Text>
               </View>
             }
           />
@@ -159,16 +159,18 @@ export default function HomeScreen() {
               {[
                 { icon: Camera, label: 'Scan Ore' },
                 { icon: MapIcon, label: 'Explore Map' },
-                { icon: GraduationCap, label: 'Learn' }, 
+                { icon: GraduationCap, label: 'Learn' },
                 { icon: Bookmark, label: 'Saved Ores' },
               ].map((item, i) => (
-                <TouchableOpacity 
-                  key={i} 
+                <TouchableOpacity
+                  key={i}
                   style={styles.actionCard}
                   onPress={() => handleActionPress(item.label)}
-                  activeOpacity={0.75}
+                  activeOpacity={0.7}
                 >
-                  <item.icon size={24} color={THEME.colors.primary} />
+                  <View style={styles.actionIconWrap}>
+                    <item.icon size={22} color={theme.colors.primary} />
+                  </View>
                   <Text style={styles.actionLabel}>{item.label}</Text>
                 </TouchableOpacity>
               ))}
@@ -177,11 +179,11 @@ export default function HomeScreen() {
             <Text style={styles.sectionTitle}>RECENT MINERALS & SCANS</Text>
             {loading ? (
               <View style={{ height: 140, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="small" color={THEME.colors.primary} />
+                <AppLoader size={60} />
               </View>
             ) : ores.length === 0 ? (
-              <View style={{ height: 140, justifyContent: 'center', alignItems: 'center', backgroundColor: THEME.colors.background, borderColor: THEME.colors.border, borderWidth: 1, borderRadius: 12, marginBottom: 20, paddingHorizontal: 16 }}>
-                <Text style={{ color: THEME.colors.textMuted, fontSize: 13, textAlign: 'center' }}>No recent minerals available.</Text>
+              <View style={{ height: 140, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background, borderColor: theme.colors.border, borderWidth: 1, borderRadius: 12, marginBottom: 20, paddingHorizontal: 16 }}>
+                <Text style={{ color: theme.colors.textMuted, fontSize: 13, textAlign: 'center' }}>No recent minerals available.</Text>
               </View>
             ) : (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20 }}>
@@ -211,13 +213,14 @@ export default function HomeScreen() {
             )}
 
             <View style={styles.banner}>
-              <Text style={styles.bannerTitle}>Namibia's Mineral Heritage</Text>
-              <TouchableOpacity 
-                style={styles.bannerButton} 
-                activeOpacity={0.8}
+              <Text style={styles.bannerLabel}>Did you know?</Text>
+              <Text style={styles.bannerTitle}>Namibia hosts over 300 unique mineral species found nowhere else on Earth</Text>
+              <TouchableOpacity
+                style={styles.bannerButton}
+                activeOpacity={0.85}
                 onPress={() => router.push('/(tabs)/learn' as any)}
               >
-                <Text style={styles.bannerButtonText}>Learn More</Text>
+                <Text style={styles.bannerButtonText}>Explore Geology</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>

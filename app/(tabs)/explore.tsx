@@ -16,9 +16,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { THEME } from '../../constants/theme';
+import { useAppTheme } from '../../contexts/theme-context';
 import type { InferenceDetection, InferenceResponse } from '../../types/ore';
-import { styles } from './explore.styles';
+import { getStyles } from './explore.styles';
 
 type ScreenState = 'idle' | 'preview' | 'loading' | 'results' | 'error';
 
@@ -35,6 +35,8 @@ const MINERAL_STATIC_REGISTRY: Record<string, { colour: string; hardness: string
 };
 
 export default function ExploreScreen() {
+  const { theme } = useAppTheme();
+  const styles = React.useMemo(() => getStyles(theme.colors), [theme]);
   const [screenState, setScreenState] = useState<ScreenState>('idle');
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [results, setResults] = useState<InferenceResponse | null>(null);
@@ -311,14 +313,14 @@ export default function ExploreScreen() {
               />
               
               <TouchableOpacity style={styles.clearButton} onPress={handleClearImage} activeOpacity={0.8}>
-                <RotateCcw size={16} color={THEME.colors.surface} />
+                <RotateCcw size={16} color={theme.colors.surface} />
                 <Text style={styles.clearButtonText}>Retake</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <View style={styles.emptyZone}>
               <View style={styles.emptyIconCircle}>
-                <ImageIcon size={32} color={THEME.colors.primary} />
+                <ImageIcon size={32} color={theme.colors.primary} />
               </View>
               <Text style={styles.emptyZoneTitle}>No image selected</Text>
               <Text style={styles.emptyZoneHint}>JPEG or PNG · max 10 MB</Text>
@@ -329,11 +331,11 @@ export default function ExploreScreen() {
         {/* Action Buttons */}
         <View style={styles.actionRow}>
           <TouchableOpacity style={styles.primaryButton} onPress={handleOpenCamera} activeOpacity={0.85}>
-            <Camera size={20} color={THEME.colors.surface} />
+            <Camera size={20} color={theme.colors.surface} />
             <Text style={styles.primaryButtonText}>Camera</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.secondaryButton} onPress={handlePickFromGallery} activeOpacity={0.85}>
-            <ImageIcon size={20} color={THEME.colors.primary} />
+            <ImageIcon size={20} color={theme.colors.primary} />
             <Text style={styles.secondaryButtonText}>Gallery</Text>
           </TouchableOpacity>
         </View>
@@ -346,9 +348,9 @@ export default function ExploreScreen() {
           activeOpacity={0.85}
         >
           {screenState === 'loading' ? (
-            <ActivityIndicator color={THEME.colors.surface} size="small" />
+            <ActivityIndicator color={theme.colors.surface} size="small" />
           ) : (
-            <Zap size={20} color={canIdentify ? THEME.colors.surface : THEME.colors.textMuted} />
+            <Zap size={20} color={canIdentify ? theme.colors.surface : theme.colors.textMuted} />
           )}
           <Text style={[styles.identifyButtonText, !canIdentify && styles.identifyButtonTextDisabled]}>
             {screenState === 'loading' ? 'Identifying…' : 'Identify Ore'}
@@ -412,13 +414,15 @@ export default function ExploreScreen() {
 }
 
 function DetectionCard({ detection }: { detection: InferenceDetection }) {
+  const { theme } = useAppTheme();
+  const styles = React.useMemo(() => getStyles(theme.colors), [theme]);
   const confidencePercent = Math.round(detection.confidence * 100);
   const confidenceColor =
     detection.confidence >= 0.75
-      ? THEME.colors.primary
+      ? theme.colors.primary
       : detection.confidence >= 0.5
-      ? THEME.colors.accent
-      : THEME.colors.error;
+      ? theme.colors.accent
+      : theme.colors.error;
 
   // Handles dynamic document routing to the detailed profile screen
   const handleViewProfile = () => {
@@ -451,7 +455,7 @@ function DetectionCard({ detection }: { detection: InferenceDetection }) {
 
       <View style={styles.detectionFooter}>
         <Text style={styles.viewProfileText}>View full profile</Text>
-        <ChevronRight size={16} color={THEME.colors.primary} />
+        <ChevronRight size={16} color={theme.colors.primary} />
       </View>
     </TouchableOpacity>
   );

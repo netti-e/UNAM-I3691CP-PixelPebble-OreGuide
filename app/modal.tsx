@@ -5,8 +5,10 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Cpu, Layers, ShieldAlert, X, Heart } from 'lucide-react-native';
 import React, { useState, useEffect } from 'react';
-import { Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { ActivityIndicator, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { AppLoader } from '../components/app-loader';
 import { THEME } from '../constants/theme';
+import { useAppTheme } from '../contexts/theme-context';
 import { fetchAllOres } from '../services/firestore';
 import { Ore } from '../types/ore';
 import { formatChemicalFormula } from '../utils/format-fomula';
@@ -15,6 +17,8 @@ import { useAuth } from '../hooks/use-auth';
 
 export default function ModalScreen() {
   const { oreID } = useLocalSearchParams<{ oreID: string }>();
+  const { theme } = useAppTheme();
+  const THEME = theme;
   const { user } = useAuth();
   const { isFavorite, addFavorite, removeFavorite, loading } = useFavorites();
 
@@ -49,18 +53,18 @@ export default function ModalScreen() {
 
   if (fetching) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color={THEME.colors.primary} />
+      <View style={[styles.container, styles.center, { backgroundColor: THEME.colors.background }]}>
+        <AppLoader size={90} />
       </View>
     );
   }
 
   if (!oreData) {
     return (
-      <View style={[styles.container, styles.center]}>
+      <View style={[styles.container, styles.center, { backgroundColor: THEME.colors.background }]}>
         <ShieldAlert size={48} color="#EF4444" />
-        <Text style={styles.errorText}>Specimen Profile Not Found</Text>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <Text style={[styles.errorText, { color: THEME.colors.textMuted }]}>Specimen Profile Not Found</Text>
+        <TouchableOpacity style={[styles.backButton, { backgroundColor: THEME.colors.primary }]} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>Dismiss</Text>
         </TouchableOpacity>
       </View>
@@ -70,7 +74,7 @@ export default function ModalScreen() {
   const isSaved = isFavorite(oreID as string);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: THEME.colors.background }]}>
       <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto'} />
       
       <View style={styles.imageContainer}>
@@ -107,7 +111,7 @@ export default function ModalScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        <View style={styles.identityRow}>
+        <View style={[styles.identityRow, { backgroundColor: THEME.colors.background }]}>
           <Text style={styles.oreTitle}>{oreData.name}</Text>
           <View style={styles.formulaBadge}>
             <Text style={styles.formulaText}>
@@ -118,24 +122,24 @@ export default function ModalScreen() {
 
         <View style={styles.divider} />
 
-        <Text style={styles.sectionHeading}>Physical Properties</Text>
+        <Text style={[styles.sectionHeading, { color: THEME.colors.textMuted }]}>Physical Properties</Text>
         <View style={styles.propertiesGrid}>
-          <View style={styles.propertyCard}>
+          <View style={[styles.propertyCard, { backgroundColor: THEME.colors.surface, borderColor: THEME.colors.border }]}>
             <Layers size={18} color={THEME.colors.primary} />
-            <Text style={styles.propertyLabel}>Color Spec</Text>
-            <Text style={styles.propertyValue}>{oreData.color}</Text>
+            <Text style={[styles.propertyLabel, { color: THEME.colors.textMuted }]}>Color Spec</Text>
+            <Text style={[styles.propertyValue, { color: THEME.colors.text }]}>{oreData.color}</Text>
           </View>
 
-          <View style={styles.propertyCard}>
+          <View style={[styles.propertyCard, { backgroundColor: THEME.colors.surface, borderColor: THEME.colors.border }]}>
             <Cpu size={18} color={THEME.colors.primary} />
-            <Text style={styles.propertyLabel}>Hardness (Mohs)</Text>
-            <Text style={styles.propertyValue}>{oreData.hardness}</Text>
+            <Text style={[styles.propertyLabel, { color: THEME.colors.textMuted }]}>Hardness (Mohs)</Text>
+            <Text style={[styles.propertyValue, { color: THEME.colors.text }]}>{oreData.hardness}</Text>
           </View>
         </View>
 
-        <Text style={styles.sectionHeading}>Economic & Industrial Uses</Text>
-        <View style={styles.descriptionBox}>
-          <Text style={styles.descriptionText}>{oreData.uses}</Text>
+        <Text style={[styles.sectionHeading, { color: THEME.colors.textMuted }]}>Economic & Industrial Uses</Text>
+        <View style={[styles.descriptionBox, { backgroundColor: THEME.colors.surface, borderColor: THEME.colors.border }]}>
+          <Text style={[styles.descriptionText, { color: THEME.colors.text }]}>{oreData.uses}</Text>
         </View>
       </ScrollView>
     </View>

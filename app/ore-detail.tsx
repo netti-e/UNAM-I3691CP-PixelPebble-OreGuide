@@ -7,20 +7,21 @@ import { useLocalSearchParams, router, Stack } from 'expo-router';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { ArrowLeft, Beaker, Shield, Compass, Image as ImageIcon } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  Image, 
-  TouchableOpacity, 
-  ActivityIndicator, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Image,
+  TouchableOpacity,
   SafeAreaView,
   Platform,
   StatusBar
 } from 'react-native';
+import { AppLoader } from '../components/app-loader';
 import { db } from '../services/firebase';
 import { THEME } from '../constants/theme';
+import { useAppTheme } from '../contexts/theme-context';
 
 interface OreData {
   name: string;
@@ -34,7 +35,8 @@ interface OreData {
 }
 
 export default function OreDetailScreen() {
-  // Parse any potential parameter key variants passed from the router
+  const { theme } = useAppTheme();
+  const c = theme.colors;
   const params = useLocalSearchParams<{ oreId?: string; oreID?: string; id?: string }>();
   const resolvedOreId = params.oreId || params.oreID || params.id;
 
@@ -96,18 +98,18 @@ export default function OreDetailScreen() {
 
   if (loading) {
     return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color={THEME.colors.primary} />
-        <Text style={styles.loaderText}>Extracting Mineral Matrices...</Text>
+      <View style={[styles.loaderContainer, { backgroundColor: c.background }]}>
+        <AppLoader size={90} />
+        <Text style={[styles.loaderText, { color: c.textMuted }]}>Extracting Mineral Matrices...</Text>
       </View>
     );
   }
 
   if (!ore) {
     return (
-      <SafeAreaView style={styles.errorContainer}>
-        <Text style={styles.errorText}>Geological profile unavailable.</Text>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+      <SafeAreaView style={[styles.errorContainer, { backgroundColor: c.background }]}>
+        <Text style={[styles.errorText, { color: c.textMuted }]}>Geological profile unavailable.</Text>
+        <TouchableOpacity style={[styles.backBtn, { backgroundColor: c.primary }]} onPress={() => router.back()}>
           <Text style={styles.backBtnText}>Return to Hub</Text>
         </TouchableOpacity>
       </SafeAreaView>
@@ -118,62 +120,51 @@ export default function OreDetailScreen() {
   const chemicalFormula = ore.chemicalComposition || ore.chemicalCompostion || 'Unknown Formula';
 
   return (
-    <View style={styles.container}>
-      {/* Explicitly removes the native stack header bar element */}
+    <View style={[styles.container, { backgroundColor: c.background }]}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* Floating Translucent Custom Header Navigation */}
       <SafeAreaView style={styles.headerNav}>
-        <TouchableOpacity style={styles.roundIconButton} onPress={() => router.back()}>
-          <ArrowLeft size={22} color={THEME.colors.text} />
+        <TouchableOpacity style={[styles.roundIconButton, { backgroundColor: c.surface }]} onPress={() => router.back()}>
+          <ArrowLeft size={22} color={c.text} />
         </TouchableOpacity>
       </SafeAreaView>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollPadding}>
-        {/* Main Banner Hero */}
         {ore.mainImageURL && (
-          <Image 
-            source={{ uri: ore.mainImageURL }} 
-            style={styles.heroImage} 
-            resizeMode="cover"
-          />
+          <Image source={{ uri: ore.mainImageURL }} style={styles.heroImage} resizeMode="cover" />
         )}
 
-        {/* Content Sheet */}
-        <View style={[styles.profileSheet, !ore.mainImageURL && { marginTop: 80 }]}>
-          <Text style={styles.title}>{ore.name}</Text>
-          <Text style={styles.formula}>{chemicalFormula}</Text>
+        <View style={[styles.profileSheet, { backgroundColor: c.surface }, !ore.mainImageURL && { marginTop: 80 }]}>
+          <Text style={[styles.title, { color: c.text }]}>{ore.name}</Text>
+          <Text style={[styles.formula, { color: c.primary }]}>{chemicalFormula}</Text>
 
-          {/* Matrix Specs Grid */}
           <View style={styles.grid}>
-            <View style={styles.gridCard}>
-              <Beaker size={20} color={THEME.colors.primary} />
-              <Text style={styles.gridLabel}>Color Profile</Text>
-              <Text style={styles.gridValue}>{ore.color}</Text>
+            <View style={[styles.gridCard, { backgroundColor: c.background, borderColor: c.border }]}>
+              <Beaker size={20} color={c.primary} />
+              <Text style={[styles.gridLabel, { color: c.textMuted }]}>Color Profile</Text>
+              <Text style={[styles.gridValue, { color: c.text }]}>{ore.color}</Text>
             </View>
 
-            <View style={styles.gridCard}>
-              <Shield size={20} color={THEME.colors.primary} />
-              <Text style={styles.gridLabel}>Mohs Hardness</Text>
-              <Text style={styles.gridValue}>{ore.hardness} Mohs</Text>
+            <View style={[styles.gridCard, { backgroundColor: c.background, borderColor: c.border }]}>
+              <Shield size={20} color={c.primary} />
+              <Text style={[styles.gridLabel, { color: c.textMuted }]}>Mohs Hardness</Text>
+              <Text style={[styles.gridValue, { color: c.text }]}>{ore.hardness} Mohs</Text>
             </View>
           </View>
 
-          {/* Primary Uses Node */}
           <View style={styles.section}>
             <View style={styles.sectionHeaderRow}>
-              <Compass size={18} color={THEME.colors.text} />
-              <Text style={styles.sectionTitle}>Industrial Application</Text>
+              <Compass size={18} color={c.text} />
+              <Text style={[styles.sectionTitle, { color: c.text }]}>Industrial Application</Text>
             </View>
-            <Text style={styles.sectionParagraph}>{ore.uses}</Text>
+            <Text style={[styles.sectionParagraph, { color: c.text }]}>{ore.uses}</Text>
           </View>
 
-          {/* Dynamic Image Samples Array Gallery */}
           {ore.imageSamples && ore.imageSamples.length > 0 && (
             <View style={styles.section}>
               <View style={styles.sectionHeaderRow}>
-                <ImageIcon size={18} color={THEME.colors.text} />
-                <Text style={styles.sectionTitle}>Geological Samples</Text>
+                <ImageIcon size={18} color={c.text} />
+                <Text style={[styles.sectionTitle, { color: c.text }]}>Geological Samples</Text>
               </View>
               <ScrollView 
                 horizontal 

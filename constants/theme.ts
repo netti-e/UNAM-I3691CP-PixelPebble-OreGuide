@@ -1,3 +1,18 @@
+export type ThemeColors = typeof THEME.colors;
+
+export const DARK_COLORS = {
+  primary:    '#D35400',
+  secondary:  '#27AE60',
+  accent:     '#D4AF37',
+  background: '#0F172A',
+  surface:    '#1E293B',
+  text:       '#F1F5F9',
+  textMuted:  '#94A3B8',
+  border:     '#334155',
+  error:      '#C0392B',
+  overlay:    'rgba(0,0,0,0.6)',
+};
+
 export const PALETTE = {
   namibOrange: '#D35400',    // Evocative of the Sossusvlei dunes / oxidized iron
   malachiteGreen: '#27AE60', // Representative of copper carbonate minerals found in Tsumeb

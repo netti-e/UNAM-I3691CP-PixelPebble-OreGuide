@@ -3,16 +3,19 @@
 
 import { router } from 'expo-router';
 import { Gem, Landmark, Layers, Pickaxe } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { THEME } from '../../constants/theme';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Image, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { AppLoader } from '../../components/app-loader';
+import { useAppTheme } from '../../contexts/theme-context';
 import { fetchAllOres, fetchEducationalContent, fetchMineLocations } from '../../services/firestore';
 import { MineLocation, Ore } from '../../types/ore';
-import { styles } from './learn.styles';
+import { getStyles } from './learn.styles';
 
 type SubSection = 'ores' | 'basics' | 'geology' | 'mining';
 
 export default function LearnScreen() {
+  const { theme } = useAppTheme();
+  const styles = useMemo(() => getStyles(theme.colors), [theme]);
   const [activeTab, setActiveTab] = useState<SubSection>('ores');
   const [ores, setOres] = useState<Ore[]>([]);
   const [locations, setLocations] = useState<MineLocation[]>([]);
@@ -55,7 +58,7 @@ export default function LearnScreen() {
       style={[styles.tabButton, activeTab === type && styles.activeTabButton]}
       onPress={() => setActiveTab(type)}
     >
-      <IconComponent size={16} color={activeTab === type ? '#FFF' : THEME.colors.textMuted} />
+      <IconComponent size={16} color={activeTab === type ? '#FFF' : theme.colors.textMuted} />
       <Text style={[styles.tabButtonText, activeTab === type && styles.activeTabButtonText]}>
         {label}
       </Text>
@@ -81,8 +84,8 @@ export default function LearnScreen() {
 
       {loading ? (
         <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color={THEME.colors.primary} />
-          <Text style={{ color: THEME.colors.textMuted, marginTop: 12 }}>Loading knowledge modules...</Text>
+          <AppLoader size={80} />
+          <Text style={{ color: theme.colors.textMuted, marginTop: 8 }}>Loading knowledge modules...</Text>
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
