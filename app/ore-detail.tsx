@@ -5,7 +5,7 @@
 import { useLocalSearchParams, router, Stack } from 'expo-router';
 // Added collection, query, where, and getDocs to handle fallback lookup matrices
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import { ArrowLeft, Beaker, Shield, Compass, Image as ImageIcon, Search } from 'lucide-react-native';
+import { ArrowLeft, Beaker, Shield, Compass, Image as ImageIcon, Search, Heart } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -13,7 +13,10 @@ import {
   StyleSheet,
   ScrollView,
   Image,
+  Modal,
+  ActivityIndicator,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   Linking,
   SafeAreaView,
   Platform,
@@ -23,6 +26,8 @@ import { AppLoader } from '../components/app-loader';
 import { db } from '../services/firebase';
 import { THEME } from '../constants/theme';
 import { useAppTheme } from '../contexts/theme-context';
+import { useFavorites } from '../hooks/use-favorites';
+import { useAuth } from '../hooks/use-auth';
 
 interface OreData {
   name: string;
@@ -41,8 +46,26 @@ export default function OreDetailScreen() {
   const params = useLocalSearchParams<{ oreId?: string; oreID?: string; id?: string }>();
   const resolvedOreId = params.oreId || params.oreID || params.id;
 
+  const { user } = useAuth();
+  const { isFavorite, addFavorite, removeFavorite, loading: favLoading } = useFavorites();
+
   const [loading, setLoading] = useState(true);
   const [ore, setOre] = useState<OreData | null>(null);
+  const [lightboxUri, setLightboxUri] = useState<string | null>(null);
+
+  const handleFavoriteToggle = async () => {
+    if (!user) { alert('Please log in to save favorites.'); return; }
+    if (!resolvedOreId) return;
+    try {
+      if (isFavorite(resolvedOreId)) {
+        await removeFavorite(resolvedOreId);
+      } else {
+        await addFavorite(resolvedOreId);
+      }
+    } catch {
+      alert('Failed to update favorites. Please try again.');
+    }
+  };
 
   useEffect(() => {
     if (!resolvedOreId) {
@@ -124,15 +147,46 @@ export default function OreDetailScreen() {
     <View style={[styles.container, { backgroundColor: c.background }]}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <SafeAreaView style={styles.headerNav}>
+      <SafeAreaView style={styles.headerNav} pointerEvents="box-none">
         <TouchableOpacity style={[styles.roundIconButton, { backgroundColor: c.surface }]} onPress={() => router.back()}>
           <ArrowLeft size={22} color={c.text} />
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.roundIconButton, { backgroundColor: c.surface }]}
+          onPress={handleFavoriteToggle}
+          disabled={favLoading}
+        >
+          {favLoading ? (
+            <ActivityIndicator size="small" color={c.primary} />
+          ) : (
+            <Heart
+              size={20}
+              color={resolvedOreId && isFavorite(resolvedOreId) ? c.primary : c.textMuted}
+              fill={resolvedOreId && isFavorite(resolvedOreId) ? c.primary : 'transparent'}
+            />
+          )}
+        </TouchableOpacity>
       </SafeAreaView>
+
+      {/* Full-screen image lightbox */}
+      <Modal visible={!!lightboxUri} transparent animationType="fade" onRequestClose={() => setLightboxUri(null)}>
+        <TouchableWithoutFeedback onPress={() => setLightboxUri(null)}>
+          <View style={styles.lightboxBackdrop}>
+            <TouchableWithoutFeedback>
+              <Image source={{ uri: lightboxUri! }} style={styles.lightboxImage} resizeMode="contain" />
+            </TouchableWithoutFeedback>
+            <TouchableOpacity style={styles.lightboxClose} onPress={() => setLightboxUri(null)}>
+              <ArrowLeft size={20} color="#FFF" />
+            </TouchableOpacity>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollPadding}>
         {ore.mainImageURL && (
-          <Image source={{ uri: ore.mainImageURL }} style={styles.heroImage} resizeMode="cover" />
+          <TouchableOpacity activeOpacity={0.9} onPress={() => setLightboxUri(ore.mainImageURL!)}>
+            <Image source={{ uri: ore.mainImageURL }} style={styles.heroImage} resizeMode="cover" />
+          </TouchableOpacity>
         )}
 
         <View style={[styles.profileSheet, { backgroundColor: c.surface }, !ore.mainImageURL && { marginTop: 80 }]}>
@@ -182,11 +236,9 @@ export default function OreDetailScreen() {
                 contentContainerStyle={styles.galleryScroll}
               >
                 {ore.imageSamples.map((imgUrl, idx) => (
-                  <Image 
-                    key={idx} 
-                    source={{ uri: imgUrl }} 
-                    style={styles.galleryThumb} 
-                  />
+                  <TouchableOpacity key={idx} activeOpacity={0.85} onPress={() => setLightboxUri(imgUrl)}>
+                    <Image source={{ uri: imgUrl }} style={styles.galleryThumb} />
+                  </TouchableOpacity>
                 ))}
               </ScrollView>
             </View>
@@ -229,7 +281,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 12 : 12,
     left: 20,
+    right: 20,
     zIndex: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   roundIconButton: {
     width: 42,
@@ -341,6 +396,24 @@ const styles = StyleSheet.create({
   backBtnText: {
     color: '#FFF',
     fontWeight: '600',
+  },
+  lightboxBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lightboxImage: {
+    width: '100%',
+    height: '100%',
+  },
+  lightboxClose: {
+    position: 'absolute',
+    top: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 16 : 56,
+    left: 20,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 20,
+    padding: 10,
   },
   googleButton: {
     flexDirection: 'row',
