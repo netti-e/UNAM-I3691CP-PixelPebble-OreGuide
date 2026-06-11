@@ -135,6 +135,7 @@ C:.
 │   │   _layout.tsx
 │   │   
 │   ├───(auth)
+│   │       forgot-password.tsx
 │   │       login+styles.ts
 │   │       login.styles.ts
 │   │       login.tsx
