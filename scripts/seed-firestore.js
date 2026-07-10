@@ -1,24 +1,36 @@
 // scripts/seed-firestore.js
 // Pushes ores, mines, and educational content to Firestore.
+// Uses the Admin SDK, which bypasses security rules (client writes to these
+// collections are denied by firestore.rules).
+//
+// Setup (one-time):
+//   1. Firebase console → Project settings → Service accounts → Generate new private key
+//   2. Save the JSON as scripts/service-account.json (gitignored), or point
+//      GOOGLE_APPLICATION_CREDENTIALS at wherever you saved it.
 // Run with: node scripts/seed-firestore.js
 
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+const fs = require('fs');
+const admin = require('firebase-admin');
 
-const { initializeApp } = require('firebase/app');
-const { getFirestore, doc, setDoc } = require('firebase/firestore');
+const keyPath =
+  process.env.GOOGLE_APPLICATION_CREDENTIALS ||
+  path.resolve(__dirname, 'service-account.json');
 
-const firebaseConfig = {
-  apiKey:            process.env.EXPO_PUBLIC_FIREBASE_API_KEY?.trim(),
-  authDomain:        process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN?.trim(),
-  projectId:         process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID?.trim(),
-  storageBucket:     process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET?.trim(),
-  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID?.trim(),
-  appId:             process.env.EXPO_PUBLIC_FIREBASE_APP_ID?.trim(),
-};
+if (!fs.existsSync(keyPath)) {
+  console.error(
+    `❌ Service account key not found at: ${keyPath}\n` +
+    'Download one from Firebase console → Project settings → Service accounts,\n' +
+    'save it as scripts/service-account.json, or set GOOGLE_APPLICATION_CREDENTIALS.'
+  );
+  process.exit(1);
+}
 
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
+admin.initializeApp({
+  credential: admin.credential.cert(require(keyPath)),
+});
+
+const db = admin.firestore();
 
 // ── Ores ──────────────────────────────────────────────────────────────────────
 
@@ -336,7 +348,7 @@ const EDUCATIONAL_CONTENT = {
 async function seedOres() {
   console.log('\n💎 Seeding ores collection...');
   for (const ore of ORES) {
-    await setDoc(doc(db, 'ores', ore.oreID), ore);
+    await db.collection('ores').doc(ore.oreID).set(ore);
     console.log(`  ✓ ${ore.name}`);
   }
 }
@@ -344,7 +356,7 @@ async function seedOres() {
 async function seedMines() {
   console.log('\n📍 Seeding mines collection...');
   for (const mine of MINE_LOCATIONS) {
-    await setDoc(doc(db, 'mines', mine.locationID), mine);
+    await db.collection('mines').doc(mine.locationID).set(mine);
     console.log(`  ✓ ${mine.mineName}`);
   }
 }
@@ -352,7 +364,7 @@ async function seedMines() {
 async function seedEducationalContent() {
   console.log('\n📚 Seeding educationalContent collection...');
   for (const [, section] of Object.entries(EDUCATIONAL_CONTENT)) {
-    await setDoc(doc(db, 'educationalContent', section.sectionID), section);
+    await db.collection('educationalContent').doc(section.sectionID).set(section);
     console.log(`  ✓ ${section.title}`);
   }
 }

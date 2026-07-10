@@ -45,3 +45,6 @@ app-example
 /.claude
 /.vscode
 *.json
+
+# Firebase service account key — never commit (also covered by *.json above)
+scripts/service-account.json

@@ -1,0 +1,76 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ── Public catalog (read-only) ──────────────────────────────────────
+    // Written only via the Admin SDK / Firebase console, never by the app.
+    match /ores/{oreId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    match /mines/{mineId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    match /educationalContent/{sectionId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // ── User profiles ───────────────────────────────────────────────────
+    // Schema: { userID, email, name, dateCreated }
+    match /users/{userId} {
+      // Owner can read their own doc; listing the collection is never allowed,
+      // so one user cannot enumerate other users' emails.
+      allow get: if isOwner(userId);
+      allow list: if false;
+
+      allow create: if isOwner(userId)
+        && request.resource.data.keys().hasOnly(['userID', 'email', 'name', 'dateCreated'])
+        && request.resource.data.userID == userId
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.dateCreated == request.time;
+
+      // Covers the setDoc(..., { merge: true }) on Google sign-in.
+      allow update: if isOwner(userId)
+        && request.resource.data.keys().hasOnly(['userID', 'email', 'name', 'dateCreated'])
+        && request.resource.data.userID == userId
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 100;
+
+      allow delete: if false;
+
+      // ── Favorites ─────────────────────────────────────────────────────
+      // Doc ID is the oreID; schema: { oreID, addedAt }
+      match /favorites/{oreId} {
+        allow read: if isOwner(userId);
+
+        allow create, update: if isOwner(userId)
+          && request.resource.data.keys().hasOnly(['oreID', 'addedAt'])
+          && request.resource.data.oreID == oreId
+          && request.resource.data.addedAt == request.time;
+
+        allow delete: if isOwner(userId);
+      }
+    }
+
+    // ── Everything else is denied ───────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

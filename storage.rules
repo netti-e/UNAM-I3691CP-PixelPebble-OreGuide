@@ -1,0 +1,13 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // The app only displays ore images. It never uploads, deletes, or reads
+    // Storage through the SDK (images load via tokened download URLs, which
+    // keep working regardless of these rules).
+    match /{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+  }
+}
